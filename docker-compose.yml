@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: aluda-backend
+    user: "root"
+    working_dir: /workspace
+    command: micromamba run -n aluda-whisper uvicorn src.backend.aluda_backend_fastapi:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/workspace
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ALUDA_SMTP_HOST=${ALUDA_SMTP_HOST:-}
+      - ALUDA_SMTP_PORT=${ALUDA_SMTP_PORT:-587}
+      - ALUDA_SMTP_USER=${ALUDA_SMTP_USER:-}
+      - ALUDA_SMTP_PASSWORD=${ALUDA_SMTP_PASSWORD:-}
+      - ALUDA_SMTP_FROM=${ALUDA_SMTP_FROM:-}
+      - ALUDA_SMTP_SECURITY=${ALUDA_SMTP_SECURITY:-tls}
+      - ALUDA_MAX_EMAIL_ATTACH_MB=${ALUDA_MAX_EMAIL_ATTACH_MB:-20}
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: aluda-frontend
+    working_dir: /workspace/src/frontend
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      - VITE_API_PROXY_TARGET=http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src/frontend:/workspace/src/frontend
+      - /workspace/src/frontend/node_modules
+    depends_on:
+      - backend

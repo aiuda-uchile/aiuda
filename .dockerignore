@@ -1,0 +1,28 @@
+.git
+.gitignore
+.vscode
+.idea
+__pycache__
+**/__pycache__
+**/*.pyc
+**/*.pyo
+
+# Runtime data
+jobs
+logs
+
+# Frontend deps/build
+src/frontend/node_modules
+src/frontend/dist
+src/frontend/.vite
+src/frontend/.cache
+
+# Python environment files
+.venv
+venv
+env
+ENV
+
+# Local temp files
+*.tmp
+*.bak
