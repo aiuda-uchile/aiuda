@@ -1,0 +1,60 @@
+:root {
+    --color-primary-1: #26325b;
+    --color-primary-2: #f4971a;
+    --color-primary-3: #22aa9f;
+    --color-secondary-1: #f5d49c;
+    --color-secondary-2: #aeb34b;
+    --color-secondary-3: #785a9e;
+    --color-grey-1: #d7d8df;
+    --color-grey-2: #9c9ea2;
+    --color-grey-3: #646465;
+    --color-error: #f65244;
+    --color-process-1: #75b3df;
+    --color-process-2: #478fc2;
+    --font-primary:"DM Sans", sans-serif;
+}
+body{
+    font-family: var(--font-primary);
+}
+button{
+    font-family: var(--font-primary);
+    cursor: pointer;
+}
+.bg-color-primary{
+    background-color: var(--color-primary-1);
+}
+.color-primary{
+    color:var(--color-primary-1)
+}
+nav a{
+    color:#fff;
+}
+nav a.active{
+    color: var(--color-secondary-1);
+}
+
+.btn-color-primary-2{
+    background-color: var(--color-primary-3);
+    text-transform: uppercase;
+    font-size: 1.2em;
+    transition: 1s;
+}
+.btn-color-primary-2:hover{
+    background-color: #176171;
+}
+z
+/*--FOOTER--*/
+footer h4{
+    font-weight: 500;
+    font-size: 1.1em;
+}
+.logo-footer1{
+    max-width: 100px;
+}
+.logo-footer2{
+    margin-top: 1em;
+    max-width: 150px;
+}
+.logo-footer4{
+    max-width: 400px;
+}
