@@ -16,7 +16,14 @@ import {
   ScanSearch,
   Upload,
   Video,
-  Search
+  Search,
+  Captions,
+  ListMinus,
+  Languages,
+  PersonStanding,
+  PaintBucket,
+  CaseSensitive,
+  CirclePlay
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -56,8 +63,6 @@ const LANGUAGE_META = {
   gl: { label: "Gallego", icon: "/galicia-icon.png" },
 }
 
-
-const FOOTER_LOGOS_SRC = "/aluda-footer.png"
 const ALUDA_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02.png"
 const AIUDA_NEGATIVE_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02-negativo.png"
 
@@ -998,35 +1003,104 @@ export default function App() {
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-6">
           <article className="mb-8 overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/60 backdrop-blur md:p-8">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-3xl">
-                <div className="mb-4">
+            <div className="">
+              <div className="max-w-3xl text-center">
+                <div className="mb-4 text-center">
                   <img
                     src={ALUDA_LOGOS_SRC}
                     alt="ALUDA"
-                    className="h-14 w-auto object-contain md:h-16"
+                    className="logo"
                   />
                 </div>
-
-                <p className="text-base leading-7 text-slate-600">
-                  ALUDA utiliza inteligencia artificial para ayudar al profesorado a crear contenidos accesibles y multilingües a partir de audio, vídeo y documentos.
+                <p className="text-base leading-7 text-slate-600 text-center mb-2">
+                  Inteligencia para una educación más accesible
                 </p>
+                <div className="bg-color-primary p-4 text-white text-center new-rounded">
+                  <h3>
+                    <strong>Aiuda </strong>utiliza inteligencia artificial para ayudar al
+                    profesorado a crear contenidos accesibles y multilingues
+                    a partir de audio, video y documentos.
+                  </h3>
+                </div>
+                <h4 className="mt-4 text-xl font-semibold color-primary">¿Qué hara Aiuda con tus archivos?</h4>
               </div>
-
-              <div className="flex shrink-0">
-                <Button
-                  variant="outline"
-                  onClick={() => fetchTasks()}
-                  disabled={loadingTasks}
-                  className="h-11 rounded-xl border-slate-300 bg-white px-5"
-                >
-                  {loadingTasks ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                  )}
-                  Actualizar
-                </Button>
+              <div className="features">
+                  <div className="feature-title bg-color-secondary w-auto new-rounded p-2 mt-4 mb-4 font-semibold color-primary inline-block">
+                      <h4 className="flex align-items-center">
+                        <CirclePlay className="mr-2 w-6 h-6"></CirclePlay> Video / Audio
+                      </h4>
+                  </div>
+                  <div className="flex gap-6">
+                    <div className="w-1/3 text center">
+                        <Captions className="m-auto w-10 h-10"></Captions>
+                        <h4 className="text-center">Subtítulos del video</h4>
+                    </div>
+                    <div className="w-1/3 text center">
+                        <ListMinus className="m-auto w-10 h-10"></ListMinus>
+                        <h4 className="text-center">Versión en texto</h4>
+                    </div>
+                    <div className="w-1/3 text center">
+                        <Languages className="m-auto w-10 h-10"></Languages>
+                        <h4 className="text-center">Traducción a otros idiomas</h4>
+                    </div>
+                  </div>
+              </div>
+              <div className="features ">
+                  <div className="feature-title bg-color-secondary w-auto new-rounded px-4 py-2 mt-4 mb-4 font-semibold color-primary inline-block">
+                      <h4 className="flex align-items-center">
+                        <FileText className="mr-2 w-6 h-6"></FileText> DOCUMENTOS
+                      </h4>
+                      
+                  </div>
+                  <div className="flex gap-6">
+                    <div className="w-1/3 text center">
+                        <PersonStanding className="m-auto w-10 h-10"></PersonStanding>
+                        <h4 className="text-center">Evaluación de Accesibilidad</h4>
+                    </div>
+                    <div className="w-1/3 text center">
+                        <PaintBucket className="m-auto w-10 h-10"></PaintBucket>
+                        <h4 className="text-center">Daltonismo Color</h4>
+                    </div>
+                    <div className="w-1/3 text center">
+                        <CaseSensitive className="m-auto w-10 h-10"></CaseSensitive>
+                        <h4 className="text-center">Tamaño de letra</h4>
+                    </div>
+                  </div>
+              </div>
+              <div className="flex gap-10 mt-6">
+                <div className="w-1/2">
+                  <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
+                  <p className="text-sm">Te enviará una notificación, cuando el procesamiento haya finalizado</p>
+                </div>
+                <div className="w-1/2">
+                  <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
+                  <div className="flex gap-6">
+                    <div className="w-1/4 text-center">
+                        <div className="lang">
+                          ES
+                        </div>
+                        <p className="text-sm">Español</p>
+                    </div>
+                    <div className="w-1/4 text-center">
+                        <div className="lang">
+                          GL
+                        </div>
+                        <p className="text-sm">Gallego</p>
+                    </div>
+                    <div className="w-1/4 text-center">
+                        <div className="lang">
+                          PT
+                        </div>
+                        <p className="text-sm">Portugués</p>
+                    </div>
+                    <div className="w-1/4 text-center">
+                        <div className="lang">
+                          EN
+                        </div>
+                        <p className="text-sm">Inglés</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </article>
@@ -1173,29 +1247,12 @@ export default function App() {
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
                       placeholder="nombre@universidad.es"
+                      required
                     />
                     <p className="text-xs text-slate-500">
                       Usaremos este correo para enviarte el identificador de la tarea y avisarte cuando finalice la tarea.
                     </p>
                   </div>
-                  {/*
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Observaciones:</Label>
-                    <Textarea
-                      id="notes"
-                      rows={4}
-                      className="rounded-xl border-slate-300 bg-white"
-                      value={form.notes}
-                      onChange={(e) =>
-                        setForm((prev) => ({ ...prev, notes: e.target.value }))
-                      }
-                      placeholder="Ej.: priorizar subtítulos, revisar especialmente la traducción al gallego, etc."
-                    />
-                    <p className="text-xs text-slate-500">
-                      Opcional. Escribe aquí cualquier contexto o instrucción relevante para esta tarea.
-                    </p>
-                  </div>*/}
-
                   <Button
                     className="h-12 w-full btn-color-primary-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
                     type="submit"
@@ -1212,10 +1269,6 @@ export default function App() {
                   <Separator />
 
                   {/*<div className="space-y-3">
-                    <p className="text-sm font-medium text-slate-900">
-                      Qué hará Aiuda con tu archivo
-                    </p>
-
                     <div className="space-y-3 rounded-2xl bg-slate-50 p-4">
 
                       {form.mode === "multimedia" ? (

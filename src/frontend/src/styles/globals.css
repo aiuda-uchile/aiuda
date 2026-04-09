@@ -15,6 +15,7 @@
 }
 body{
     font-family: var(--font-primary);
+    color: var(--color-primary-1);
 }
 button{
     font-family: var(--font-primary);
@@ -22,6 +23,9 @@ button{
 }
 .bg-color-primary{
     background-color: var(--color-primary-1);
+}
+.bg-color-secondary{
+    background-color: var(--color-secondary-1);
 }
 .color-primary{
     color:var(--color-primary-1)
@@ -42,7 +46,31 @@ nav a.active{
 .btn-color-primary-2:hover{
     background-color: #176171;
 }
-z
+.logo{
+    max-width: 300px;
+    margin: auto;
+}
+.new-rounded{
+    border-radius: 1em;
+}
+/*--INTRO--*/
+.lang{
+    font-weight: 600;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary-1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    margin-bottom: 0.5em;
+    background-color: var(--color-grey-1);
+}
+.features h4{
+    font-weight: 600;
+    font-size: 0.9em;
+}
 /*--FOOTER--*/
 footer h4{
     font-weight: 500;
