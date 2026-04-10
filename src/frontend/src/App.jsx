@@ -1027,7 +1027,7 @@ export default function App() {
               <div className="features">
                   <div className="feature-title bg-color-secondary w-auto new-rounded p-2 mt-4 mb-4 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center">
-                        <CirclePlay className="mr-2 w-6 h-6"></CirclePlay> Video / Audio
+                        <CirclePlay className="mr-2 w-6 h-6"></CirclePlay> VIDEO / AUDIO
                       </h4>
                   </div>
                   <div className="flex gap-6">
