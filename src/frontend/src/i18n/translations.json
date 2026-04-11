@@ -1,22 +1,22 @@
 {
   "es": {
-    "title": "Aiuda",
-    "subtitle": "Somos un estudio creativo",
-    "contact": "Contacto"
+    "title": "Inteligencia para una educación más accesible",
+    "slogan": "utiliza inteligencia artificial para ayudar al profesorado a crear contenidos accesibles y multilingues a partir de audio, video y documentos.",
+    "intro-question": "¿Qué hará Aiuda con tus archivos?"
   },
   "en": {
-    "title": "Aiuda",
-    "subtitle": "We are a creative studio",
-    "contact": "Contact"
+    "title": "Intelligence for a more accessible education",
+    "slogan": "uses artificial intelligence to help teachers create accessible, multilingual content from audio, video, and documents.",
+    "intro-question": "What will Aiuda do with your files?"
   },
   "pt": {
-    "title": "Aiuda",
-    "subtitle": "Somos um estúdio criativo",
-    "contact": "Contato"
+    "title": "Inteligência para uma educação mais acessível",
+    "slogan": "utiliza inteligência artificial para ajudar professores a criar conteúdo acessível e multilíngue a partir de áudio, vídeo e documentos.",
+    "intro-question": "O que a Aiuda fará com seus arquivos?"
   },
   "gl": {
-    "title": "Aiuda",
-    "subtitle": "Somos un estudo creativo",
-    "contact": "Contacto"
+    "title": "Intelixencia para unha educación máis accesible",
+    "slogan": "emprega a intelixencia artificial para axudar aos profesores a crear contido accesible e multilingüe a partir de audio, vídeo e documentos.",
+    "intro-question": "Que fará Aiuda cos teus ficheiros?"
   }
 }

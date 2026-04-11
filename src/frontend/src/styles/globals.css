@@ -30,10 +30,10 @@ button{
 .color-primary{
     color:var(--color-primary-1)
 }
-nav a{
+nav button, nav a{
     color:#fff;
 }
-nav a.active{
+nav button.active, nav a.active{
     color: var(--color-secondary-1);
 }
 
@@ -53,11 +53,42 @@ nav a.active{
 .new-rounded{
     border-radius: 1em;
 }
+.border-primary{
+    border: 2px solid var(--color-primary-1);
+}
+.border-primary2-200{
+    border: 2px solid var(--color-primary-2);
+} 
+.bg-primary2-70{
+    background-color: #f4961ae9;
+}
+.border-file-input{
+    border: 2px dashed;
+}
+.circle-type{
+    width: 70px;
+    height: 70px;
+    background-color: var(--color-primary-2);
+    margin: auto;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    margin-bottom: 0.5em;
+}
+.border-success{
+    border: 3px solid var(--color-primary-3);
+}
+.bg-success-50{
+    background-color: #22aa9f89;
+    color: var(--color-primary-1);
+}
 /*--INTRO--*/
 .lang{
     font-weight: 600;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 2px solid var(--color-primary-1);
     display: flex;

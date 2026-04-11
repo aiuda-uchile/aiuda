@@ -6,14 +6,11 @@ import {
   Clock3,
   Cpu,
   Download,
-  FileAudio,
   FileText,
   Filter,
   Loader2,
   Mail,
   Mic,
-  RefreshCw,
-  ScanSearch,
   Upload,
   Video,
   Search,
@@ -23,7 +20,11 @@ import {
   PersonStanding,
   PaintBucket,
   CaseSensitive,
-  CirclePlay
+  CirclePlay,
+  CirclePlus,
+  Presentation,
+  Volume2,
+  ListChecks
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -49,6 +50,9 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { header } from "framer-motion/client"
 
+import { useI18n } from "./i18n/i18n"
+
+
 const TARGET_LANGS = [
   { code: "es", label: "Español", icon: "🇪🇸" },
   { code: "en", label: "Inglés", icon: "🇬🇧" },
@@ -63,7 +67,7 @@ const LANGUAGE_META = {
   gl: { label: "Gallego", icon: "/galicia-icon.png" },
 }
 
-const ALUDA_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02.png"
+const AIUDA_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02.png"
 const AIUDA_NEGATIVE_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02-negativo.png"
 
 const TASKS_PER_PAGE = 6
@@ -394,6 +398,8 @@ export default function App() {
   const [loadingTasks, setLoadingTasks] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uiError, setUiError] = useState("")
+  const [errors, setErrors] = useState({})
+  const [success, setSuccess] = useState(false)
   const [logsByTask, setLogsByTask] = useState({})
   const [loadingLogId, setLoadingLogId] = useState(null)
   const [previewJsonByFile, setPreviewJsonByFile] = useState({})
@@ -404,6 +410,8 @@ export default function App() {
   const segmentRefs = useRef({})
   const logScrollRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
+  const { t, lang,changeLanguage } = useI18n()
+  const languagesNav = ["es","pt","gl", "en"]
 
   async function fetchTasks(silent = false) {
     if (!silent) setLoadingTasks(true)
@@ -519,10 +527,21 @@ export default function App() {
 
   async function submitTask(event) {
     event.preventDefault()
-
+    let newErrors = {}
+    setSuccess(false)
+    //validar email
+    if (!form.email.trim()) {
+      newErrors.email = "El email es obligatorio."
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(form.email)) {
+        newErrors.email = "Introduce un email válido."
+      }
+    }
     if (!selectedFile) {
-      setUiError("Selecciona un archivo antes de enviar el trabajo al engine.")
-      return
+      newErrors.file = "Debes subir un archivo."
+    } else if (selectedFile.size === 0) {
+      newErrors.file = "El archivo está vacío."
     }
 
     if (form.options.translation && form.options.target_langs.length === 0) {
@@ -537,13 +556,19 @@ export default function App() {
       setUiError("Indica el idioma origen o usa detección automática.")
       return
     }
-
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      setSuccess(false)
+      return
+    }
+    //limpiar errores
+    setErrors({})
+    setSuccess(false)
     setSubmitting(true)
-    setUiError("")
+
 
     try {
       const payload = buildPayload(form)
-
       const formData = new FormData()
       formData.append("file", selectedFile)
       formData.append("task_type", payload.task_type)
@@ -571,15 +596,21 @@ export default function App() {
 
       await fetchTasks()
       setSelectedFile(null)
-      setForm((prev) => ({
-        ...INITIAL_FORM,
-        email: prev.email,
-      }))
+      setForm(INITIAL_FORM)
+      setSelectedFile(null)
 
       const fileInput = document.getElementById("aluda-file-input")
       if (fileInput) fileInput.value = ""
+
+      setSuccess(true)
     } catch (error) {
       setUiError(error.message || "Error creando la tarea.")
+      setErrors({ general: error.message })
+      /*Eliminar esto después*/
+      setSuccess(true)
+      setForm(INITIAL_FORM)
+      setSelectedFile(null)
+      /*Hasta acá*/
     } finally {
       setSubmitting(false)
     }
@@ -973,56 +1004,58 @@ export default function App() {
 
   return (
     <div className="min-h-screen">
-      {/* HEADER */}
       <header className="bg-color-primary backdrop-blur border-b border-slate-200 sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-
-          {/* Logo */}
           <img
             src={AIUDA_NEGATIVE_LOGOS_SRC}
             alt="Aiuda"
             className="h-10 w-auto"
           />
-
-          {/* NAV */}
-          <nav className="flex items-center gap-6 text-sm font-medium text-slate-700">
+          <nav className="flex items-center gap-6 text-normal font-medium text-slate-700">
             <a href="#" className="hover:text-slate-900 active">CREAR</a>
             <a href="#" className="flex items-center gap-2 hover:opacity-80">
               BUSCAR
               <Search className="h-4 w-4" />
             </a>
           </nav>
-          <nav className="flex items-center gap-6 text-sm font-medium text-slate-700">
-            <a href="#" className="hover:text-slate-900 active">ES</a>
-            <a href="#" className="hover:text-slate-900">GL</a>
-            <a href="#" className="hover:text-slate-900">EN</a>
+          
+
+          <nav className="flex gap-4 text-normal font-medium text-slate-700">
+            {languagesNav.map((lng) => (
+              <button
+                key={lng}
+                onClick={() => changeLanguage(lng)}
+                className={lang === lng ? "active" : ""}
+              >
+                {lng.toUpperCase()}
+              </button>
+            ))}
           </nav>
 
         </div>
       </header>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row gap-6">
-          <article className="mb-8 overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-200/60 backdrop-blur md:p-8">
-            <div className="">
+        <div className="flex flex-col md:flex-row gap-10 mb-8">
+          <article className="w-1/2">
+            <div className="border-primary p-6 rounded-[2rem]">
               <div className="max-w-3xl text-center">
                 <div className="mb-4 text-center">
                   <img
-                    src={ALUDA_LOGOS_SRC}
-                    alt="ALUDA"
+                    src={AIUDA_LOGOS_SRC}
+                    alt="Aiuda"
                     className="logo"
                   />
                 </div>
                 <p className="text-base leading-7 text-slate-600 text-center mb-2">
-                  Inteligencia para una educación más accesible
+                  {t("title")}
                 </p>
                 <div className="bg-color-primary p-4 text-white text-center new-rounded">
+                  <a></a>
                   <h3>
-                    <strong>Aiuda </strong>utiliza inteligencia artificial para ayudar al
-                    profesorado a crear contenidos accesibles y multilingues
-                    a partir de audio, video y documentos.
+                    <strong>Aiuda </strong> {t("slogan")}
                   </h3>
                 </div>
-                <h4 className="mt-4 text-xl font-semibold color-primary">¿Qué hara Aiuda con tus archivos?</h4>
+                <h4 className="mt-4 text-xl font-semibold color-primary">{t("intro-question")}</h4>
               </div>
               <div className="features">
                   <div className="feature-title bg-color-secondary w-auto new-rounded p-2 mt-4 mb-4 font-semibold color-primary inline-block">
@@ -1075,25 +1108,25 @@ export default function App() {
                 <div className="w-1/2">
                   <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
                   <div className="flex gap-6">
-                    <div className="w-1/4 text-center">
+                    <div className="text-center">
                         <div className="lang">
                           ES
                         </div>
                         <p className="text-sm">Español</p>
                     </div>
-                    <div className="w-1/4 text-center">
+                    <div className="text-center">
                         <div className="lang">
                           GL
                         </div>
                         <p className="text-sm">Gallego</p>
                     </div>
-                    <div className="w-1/4 text-center">
+                    <div className="text-center">
                         <div className="lang">
                           PT
                         </div>
                         <p className="text-sm">Portugués</p>
                     </div>
-                    <div className="w-1/4 text-center">
+                    <div className="text-center">
                         <div className="lang">
                           EN
                         </div>
@@ -1105,20 +1138,15 @@ export default function App() {
             </div>
           </article>
 
-          <article className="mb-6">
-            <Card className="rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
-              <CardHeader className="pb-4">
+          <article className="mb-6 w-1/2">
+            <Card className="rounded-[2rem] border-primary">
+              <CardHeader className="">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                    <Upload className="h-5 w-5" />
-                  </div>
                   <div>
-                    <CardTitle className="text-xl text-slate-950">
-                      Nueva tarea
+                    <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
+                      <CirclePlus className="h-6 w-6 mr-2" />
+                      NUEVA TAREA
                     </CardTitle>
-                    <CardDescription className="mt-1 text-slate-600">
-                      {/*Sube un recurso pedagógico y déjalo en cola para el engine.*/}
-                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -1130,60 +1158,73 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => handleModeChange("multimedia")}
-                        className={`rounded-2xl border px-4 py-4 text-left transition ${form.mode === "multimedia"
-                            ? "border-sky-200 bg-sky-50 shadow-sm"
+                        className={`rounded-2xl border px-4 py-2 text-left transition ${form.mode === "multimedia"
+                            ? "border-primary2-200 bg-primary2-70 shadow-sm text-white"
                             : "border-slate-200 bg-white"
                           }`}
                       >
-                        <div className="mb-2 flex items-center gap-2">
-                          <Video className="h-4 w-4 text-slate-700" />
-                          <span className="text-sm font-semibold text-slate-900">
-                            Multimedia
+                        <div className="flex items-center gap-2">
+                          <CirclePlay className="h-6 w-6" />
+                          <span className="text-lg font-semibold">
+                            MULTIMEDIA
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">
-                          Subtitulado, transcripción, traducción y extracción de audio.
-                        </p>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleModeChange("documental")}
-                        className={`rounded-2xl border px-4 py-4 text-left transition ${form.mode === "documental"
-                            ? "border-emerald-200 bg-emerald-50 shadow-sm"
+                        className={`rounded-2xl border px-4 py-2 text-left transition ${form.mode === "documental"
+                            ? "border-primary2-200 bg-primary2-70 shadow-sm text-white"
                             : "border-slate-200 bg-white"
                           }`}
                       >
-                        <div className="mb-2 flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-slate-700" />
-                          <span className="text-sm font-semibold text-slate-900">
-                            Accesibilidad
+                        <div className="flex items-center gap-1">
+                          <Presentation className="h-5 w-5" />
+                          <FileText className="h-5 w-5" />
+                          <span className="text-lg font-semibold">
+                            DOCUMENTOS
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500">
-                          PDF/PPT para revisión de color, legibilidad y redacción.
-                        </p>
                       </button>
                     </div>
                   </div>
-
                   {form.mode === "multimedia" ? (
                     <div className="space-y-2">
-                      <Label>Tipo de recurso:</Label>
-                      <Select value={form.mediaType} onValueChange={handleMediaTypeChange}>
-                        <SelectTrigger className="h-12 rounded-xl border-slate-300 bg-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent position="popper" side="right" align="start" sideOffset={8}>
-                          <SelectItem value="video">Vídeo</SelectItem>
-                          <SelectItem value="audio">Audio</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleMediaTypeChange("video")}
+                          className={`flex items-center gap-2 rounded-xl border px-4 py-3 transition font-semibold ${
+                            form.mediaType === "video"
+                              ? "border-primary bg-sky-50"
+                              : "border-slate-300 bg-white hover:bg-slate-50"
+                          }`}
+                        >
+                          <Video></Video>
+                          VIDEO
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMediaTypeChange("audio")}
+                          className={`flex items-center gap-2 rounded-xl border px-4 py-3 transition ${
+                            form.mediaType === "audio"
+                              ? "border-primary bg-sky-50"
+                              : "border-slate-300 bg-white hover:bg-slate-50"
+                          }`}
+                        >
+                          <Volume2></Volume2>
+                          Audio
+                        </button>
+
+                      </div>
                     </div>
                   ) : null}
+                  
 
+                  {/*--INPUT FILE--*/}
                   <div className="space-y-2">
-                    <Label htmlFor="aluda-file-input">Archivo:</Label>
+                    <Label htmlFor="aluda-file-input" className="hidden">Archivo:</Label>
 
                     <input
                       id="aluda-file-input"
@@ -1206,52 +1247,65 @@ export default function App() {
                         const file = e.dataTransfer.files?.[0] ?? null
                         setSelectedFile(file)
                       }}
-                      className={`flex cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 transition ${isDraggingFile
+                      className={`border-file-input flex flex-col items-center cursor-pointer rounded-2xl border px-4 py-3 transition ${isDraggingFile
                           ? "border-sky-400 bg-sky-50"
                           : "border-slate-300 bg-white hover:bg-slate-50"
                         }`}
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">
+                        <div className="circle-type">
+                            {form.mode === "multimedia"
+                          ? form.mediaType === "video"
+                            ? <Video className="w-10 h10"></Video>
+                            : <Volume2></Volume2>
+                          : <Presentation></Presentation>}
+                        </div>
+                        <p className="text-xl font-semibold text-center">
                           {selectedFile ? selectedFile.name : "Seleccionar archivo"}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-base font-normal">
                           {selectedFile
                             ? "Pulsa o arrastra otro archivo para cambiarlo"
                             : "Haz clic o arrastra aquí tu archivo"}
                         </p>
                       </div>
+                      <p className="text-xs text-slate-500">
+                        {form.mode === "multimedia"
+                          ? form.mediaType === "video"
+                            ? "Formatos de video para subtitulado, transcripción y traducción."
+                            : "Formatos habituales: MP3, WAV, M4A y OGG."
+                          : "PDF o presentaciones para evaluación de accesibilidad."}
+                      </p>
 
-                      <div className="ml-4 shrink-0 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white">
+                      <div className="mt-2 ml-4 shrink-0 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white">
                         Examinar
                       </div>
                     </label>
-
-                    <p className="text-xs text-slate-500">
-                      {form.mode === "multimedia"
-                        ? form.mediaType === "video"
-                          ? "Formatos de vídeo para subtitulado, transcripción y traducción."
-                          : "Formatos habituales: MP3, WAV, M4A y OGG."
-                        : "PDF o presentaciones para evaluación de accesibilidad."}
-                    </p>
+                    {errors.file && (
+                      <p className="text-sm text-red-600">{errors.file}</p>
+                    )}
                   </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-mail:</Label>
+                    <Label htmlFor="email" className="text-semibold text-base">E-mail:</Label>
                     <Input
                       id="email"
                       type="email"
-                      className="h-12 rounded-xl border-slate-300 bg-white"
+                      className={`h-12 rounded-xl bg-white ${
+                        errors.email ? "border-red-300" : "border-slate-300"
+                      }`}
                       value={form.email}
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder="nombre@universidad.es"
-                      required
+                      placeholder="Ingresá tu email, por ejemplo nombre@universidad.com"
                     />
+                    {errors.email && (
+                      <p className="text-sm text-red-600">{errors.email}</p>
+                    )}
                     <p className="text-xs text-slate-500">
                       Usaremos este correo para enviarte el identificador de la tarea y avisarte cuando finalice la tarea.
                     </p>
+                    
                   </div>
                   <Button
                     className="h-12 w-full btn-color-primary-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
@@ -1268,222 +1322,25 @@ export default function App() {
 
                   <Separator />
 
-                  {/*<div className="space-y-3">
-                    <div className="space-y-3 rounded-2xl bg-slate-50 p-4">
-
-                      {form.mode === "multimedia" ? (
-                        <>
-                          {form.mediaType === "video" ? (
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Subtítulos del vídeo</Label>
-                                <p className="text-xs text-slate-500">
-                                  Genera subtítulos sincronizados para facilitar la visualización, revisión y reutilización del contenido.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.subtitles}
-                                onCheckedChange={(v) => setOption("subtitles", v)}
-                              />
-                            </div>
-                          ) : null}
-
-
-                          <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                            <div>
-                              <Label>Traducción a otros idiomas</Label>
-                              <p className="text-xs text-slate-500">
-                                Crea versiones traducidas en los idiomas seleccionados para ampliar el alcance del material.
-                              </p>
-                            </div>
-                            <Switch
-                              checked={form.options.translation}
-                              onCheckedChange={(v) => setOption("translation", v)}
-                            />
-                          </div>
-
-                          {form.mediaType === "video" ? (
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Versión en texto</Label>
-                                <p className="text-xs text-slate-500">
-                                  Convierte el vídeo en texto para consulta, edición o descarga.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.extract_audio}
-                                onCheckedChange={(v) => setOption("extract_audio", v)}
-                              />
-                            </div>
-                          ) : null}
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                            <div>
-                              <Label>Evaluación de accesibilidad</Label>
-                              <p className="text-xs text-slate-500">
-                                Activa el análisis documental.
-                              </p>
-                            </div>
-                            <Switch
-                              checked={form.options.accessibility}
-                              onCheckedChange={(v) => setOption("accessibility", v)}
-                            />
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Daltonismo / color</Label>
-                                <p className="text-xs text-slate-500">
-                                  Colores problemáticos.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.color_blindness}
-                                onCheckedChange={(v) => setOption("color_blindness", v)}
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Tamaño de letra</Label>
-                                <p className="text-xs text-slate-500">
-                                  Letras demasiado pequeñas.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.small_fonts}
-                                onCheckedChange={(v) => setOption("small_fonts", v)}
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Textos largos</Label>
-                                <p className="text-xs text-slate-500">
-                                  Fragmentos excesivos.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.long_texts}
-                                onCheckedChange={(v) => setOption("long_texts", v)}
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                              <div>
-                                <Label>Problemas de redacción</Label>
-                                <p className="text-xs text-slate-500">
-                                  Alertas y recomendaciones.
-                                </p>
-                              </div>
-                              <Switch
-                                checked={form.options.writing_issues}
-                                onCheckedChange={(v) => setOption("writing_issues", v)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                            <div>
-                              <Label>OCR</Label>
-                              <p className="text-xs text-slate-500">
-                                Útil para PDF escaneado.
-                              </p>
-                            </div>
-                            <Switch
-                              checked={form.options.ocr}
-                              onCheckedChange={(v) => setOption("ocr", v)}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                            <div>
-                              <Label>Traducción del documento</Label>
-                              <p className="text-xs text-slate-500">
-                                Traducción adicional de salidas textuales.
-                              </p>
-                            </div>
-                            <Switch
-                              checked={form.options.translation}
-                              onCheckedChange={(v) => setOption("translation", v)}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      <div className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
-                        <div>
-                          <Label>Aviso por correo</Label>
-                          <p className="text-xs text-slate-500">
-                            Te enviará una notificación cuando el procesamiento haya finalizado.
-                          </p>
-                        </div>
-                        <Switch
-                          checked={form.options.notify_by_email}
-                          onCheckedChange={(v) => setOption("notify_by_email", v)}
-                        />
-                      </div>
-
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="space-y-4">
-                    <div className="space-y-3">
-                      <Label>Idiomas disponibles</Label>
-                      <div className="grid gap-3">
-                        {TARGET_LANGS.map((lang) => {
-                          const checked = form.options.target_langs.includes(lang.code)
-                          return (
-                            <div
-                              key={lang.code}
-                              className={`flex items-center justify-between rounded-2xl border px-4 py-3 ${checked
-                                  ? "border-sky-200 bg-sky-50"
-                                  : "border-slate-200 bg-white"
-                                }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                {lang.code === "gl" ? (
-                                  <img
-                                    src={lang.icon}
-                                    alt="Gallego"
-                                    className="h-6 w-6 rounded-sm object-contain"
-                                  />
-                                ) : (
-                                  <span className="text-lg leading-none">{lang.icon}</span>
-                                )}
-
-                                <div>
-                                  <p className="text-sm font-medium text-slate-900">
-                                    {lang.label}
-                                  </p>
-                                  <p className="text-xs text-slate-500">{lang.code}</p>
-                                </div>
-                              </div>
-                              <Switch
-                                checked={checked}
-                                disabled={!form.options.translation}
-                                onCheckedChange={(value) =>
-                                  toggleTargetLang(lang.code, value)
-                                }
-                              />
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>*/}
-
                 </form>
                 {uiError ? (
                   <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
                     {uiError}
                   </div>
                 ) : null}
+                {success && (
+                  <div className="rounded-2xl border-success bg-success-50 px-4 py-3 text-sm text-green-700">
+                    <p className="text-lg text-center">
+                      ¡Recibimos tu archivo!
+                    </p>
+                    <p>
+                         Va a tardar un tiempo en procesarse. <br />
+                         Ni bien esté listo, te va a llegar un email con un número identificador para que puedas buscar y encontrar los archivos a descargar.
+                    </p>
+                    
+                  </div>
+                )}
+                
               </CardContent>
             </Card>
           </article>
@@ -1517,22 +1374,14 @@ export default function App() {
             tone="slate"
           />
         </div>
-
-        <div className="flex flex-col md:flex-row gap-6">
-          <Card className="md:w-1/2 rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
-            <CardHeader className="pb-4">
-              <div className="space-y-4">
+        <article>
+          <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                    <Filter className="h-5 w-5" />
-                  </div>
                   <div>
-                    <CardTitle className="text-xl text-slate-950">
-                      Cola de tareas
+                    <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
+                      <Search className="h-6 w-6 mr-2" />
+                        LOCALIZÁ TU TAREA
                     </CardTitle>
-                    <CardDescription className="mt-1 text-slate-600">
-                      {/*Seguimiento del buffer, el engine y el estado de entrega.*/}
-                    </CardDescription>
                   </div>
                 </div>
 
@@ -1557,9 +1406,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-            </CardHeader>
-
-            <CardContent>
               <div className="mb-4 space-y-2">
                 <Label htmlFor="task-search-id">Localizar tarea</Label>
                 <Input
@@ -1573,7 +1419,11 @@ export default function App() {
                   Usa este campo para recuperar una tarea concreta y consultar su estado o descargar sus resultados.
                 </p>
               </div>
-
+        </article>
+        
+        <div className="flex flex-col md:flex-row gap-6">
+          <Card className="md:w-1/2 rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
+            <CardContent>
               {filteredTasks.length === 0 ? (
                 <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
