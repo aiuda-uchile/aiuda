@@ -367,8 +367,6 @@ function getColorClassByPercentage(value) {
   return "bg-color-primary3"
 }
 
-
-
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM)
   const [selectedFile, setSelectedFile] = useState(null)
