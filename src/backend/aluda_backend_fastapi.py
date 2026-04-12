@@ -66,7 +66,7 @@ ALUDA_FOOTER_PATH = Path(
 )
 
 ALUDA_FOOTER_TEXT = (
-    "ALUDA forma parte del programa Labs UniversitarIA, una iniciativa interuniversitaria "
+    "Aiuda forma parte del programa Labs UniversitarIA, una iniciativa interuniversitaria "
     "impulsada por la DIPyC-SEGIB junto con la Universidade da Coruña, la Universidad de Chile, "
     "la Universidad Tecnológica del Uruguay, la Universidad de Buenos Aires y la Universidade "
     "Federal do Rio de Janeiro, con el apoyo de AECID."
@@ -350,13 +350,13 @@ def build_report_html(
     status = task.get("status", "")
 
     if status == "finished":
-        intro = "Tu solicitud en ALUDA ha finalizado correctamente."
+        intro = "Tu solicitud en Aiuda ha finalizado correctamente."
         status_label = "completado"
     elif status == "error":
-        intro = "Tu solicitud en ALUDA ha finalizado con error."
+        intro = "Tu solicitud en Aiuda ha finalizado con error."
         status_label = "error"
     else:
-        intro = "Tu solicitud en ALUDA ha cambiado de estado."
+        intro = "Tu solicitud en Aiuda ha cambiado de estado."
         status_label = status or "-"
 
     summary_fields = [
@@ -499,13 +499,13 @@ def build_report_text(
 
     if status == "finished":
         status_label = "completado"
-        intro = "Tu solicitud en ALUDA ha finalizado correctamente."
+        intro = "Tu solicitud en Aiuda ha finalizado correctamente."
     elif status == "error":
         status_label = "error"
-        intro = "Tu solicitud en ALUDA ha finalizado con error."
+        intro = "Tu solicitud en Aiuda ha finalizado con error."
     else:
         status_label = status or "-"
-        intro = "Tu solicitud en ALUDA ha cambiado de estado."
+        intro = "Tu solicitud en Aiuda ha cambiado de estado."
 
     generated_results = infer_generated_results(task, output_files)
 
