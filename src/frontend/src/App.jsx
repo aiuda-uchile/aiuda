@@ -51,7 +51,9 @@ import { Separator } from "@/components/ui/separator"
 import { header } from "framer-motion/client"
 
 import { useI18n } from "./i18n/i18n"
-
+//scripts
+import ProgressCircle from "./components/scripts/ProgressCircle"
+import MetricCard from "./components/scripts/MetricCard"
 
 const TARGET_LANGS = [
   { code: "es", label: "Español", icon: "🇪🇸" },
@@ -69,9 +71,7 @@ const LANGUAGE_META = {
 
 const AIUDA_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02.png"
 const AIUDA_NEGATIVE_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02-negativo.png"
-
 const TASKS_PER_PAGE = 6
-
 const INITIAL_FORM = {
   mode: "multimedia",
   mediaType: "video",
@@ -130,22 +130,22 @@ function getStatusConfig(status) {
     case "processing":
       return {
         label: "Procesando",
-        badge: "border-sky-200 bg-sky-50 text-sky-700",
-        bar: "bg-sky-500",
+        badge: "border-sky-200 bg-process text-white",
+        bar: "bg-process",
         icon: Loader2,
       }
     case "finished":
       return {
         label: "Finalizada",
-        badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
-        bar: "bg-emerald-500",
+        badge: "border-primary3 bg-color-primary3 text-white text-sm h-7",
+        bar: "bg-color-primary3",
         icon: CheckCircle2,
       }
     case "error":
       return {
         label: "Con error",
-        badge: "border-red-200 bg-red-50 text-red-700",
-        bar: "bg-red-500",
+        badge: "border-red-200 bg-error text-white",
+        bar: "bg-error",
         icon: AlertTriangle,
       }
     default:
@@ -291,38 +291,12 @@ function findSubtitledVideoOutput(outputs = [], key) {
   return outputs.find((filename) => regex.test(String(filename))) || null
 }
 
-function MetricCard({ title, value, icon: Icon, tone = "slate" }) {
-  const tones = {
-    slate: "from-slate-900 to-slate-700 text-white",
-    blue: "from-sky-600 to-blue-700 text-white",
-    green: "from-emerald-600 to-emerald-700 text-white",
-    amber: "from-amber-500 to-orange-600 text-white",
-    rose: "from-rose-500 to-red-600 text-white",
-  }
-
-  return (
-    <div className="rounded-[1.6rem] border border-white/70 bg-white/85 p-2 shadow-lg shadow-slate-200/60 backdrop-blur">
-      <div className={`rounded-[1.2rem] bg-gradient-to-br p-4 ${tones[tone]}`}>
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm opacity-90">{title}</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
-          </div>
-          <div className="rounded-2xl bg-white/15 p-3">
-            <Icon className="h-5 w-5" />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function PipelineMini({ task }) {
   const status = task?.status
   const steps = [
     { key: "uploaded", label: "Enviado" },
     { key: "queued", label: "En cola" },
-    { key: "engine", label: "ALUDA" },
+    { key: "engine", label: "Aiuda" },
     { key: "ready", label: "Listo" },
     { key: "notified", label: "Avisado" },
   ]
@@ -351,7 +325,7 @@ function PipelineMini({ task }) {
       <div className="relative pt-1">
         <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 hidden h-1 rounded-full bg-slate-200 md:block" />
         <div
-          className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-sky-400 md:block"
+          className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-color-primary3 md:block"
           style={{
             width: `calc(80% * ${activeConnectorCount / Math.max(steps.length - 1, 1)
               })`,
@@ -367,14 +341,14 @@ function PipelineMini({ task }) {
                 className="flex flex-col items-center gap-2 text-center"
               >
                 <div
-                  className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold ${active
-                      ? "border-sky-600 bg-sky-600 text-white"
-                      : "border-slate-300 bg-white text-slate-500"
+                  className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-base font-semibold ${active
+                      ? "border-primary3 bg-color-primary3 text-white"
+                      : "border-slate-300 bg-white"
                     }`}
                 >
                   {idx + 1}
                 </div>
-                <p className="text-center text-[11px] leading-4 text-slate-600">
+                <p className="text-center text-base leading-4 mt-2">
                   {step.label}
                 </p>
               </div>
@@ -385,6 +359,13 @@ function PipelineMini({ task }) {
     </div>
   )
 }
+function getColorClassByPercentage(value) {
+  if (value < 40) return "bg-error"
+  if (value <= 60) return "bg-process"
+  return "bg-color-primary3"
+}
+
+
 
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM)
@@ -1013,7 +994,7 @@ export default function App() {
           />
           <nav className="flex items-center gap-6 text-normal font-medium text-slate-700">
             <a href="#" className="hover:text-slate-900 active">CREAR</a>
-            <a href="#" className="flex items-center gap-2 hover:opacity-80">
+            <a href="#buscar" className="flex items-center gap-2 hover:opacity-80">
               BUSCAR
               <Search className="h-4 w-4" />
             </a>
@@ -1036,7 +1017,7 @@ export default function App() {
       </header>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-10 mb-8">
-          <article className="w-1/2">
+          <article className="md:w-1/2">
             <div className="border-primary p-6 rounded-[2rem]">
               <div className="max-w-3xl text-center">
                 <div className="mb-4 text-center">
@@ -1100,14 +1081,14 @@ export default function App() {
                     </div>
                   </div>
               </div>
-              <div className="flex gap-10 mt-6">
-                <div className="w-1/2">
+              <div className="flex flex-col md:flex-row gap-2 md:gap-10 mt-6">
+                <div className="md:w-1/2">
                   <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
                   <p className="text-sm">Te enviará una notificación, cuando el procesamiento haya finalizado</p>
                 </div>
-                <div className="w-1/2">
+                <div className="md:w-1/2">
                   <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
-                  <div className="flex gap-6">
+                  <div className="flex gap-2 md:gap-6">
                     <div className="text-center">
                         <div className="lang">
                           ES
@@ -1138,7 +1119,7 @@ export default function App() {
             </div>
           </article>
 
-          <article className="mb-6 w-1/2">
+          <article className="mb-6 md:w-1/2">
             <Card className="rounded-[2rem] border-primary">
               <CardHeader className="">
                 <div className="flex items-start gap-3">
@@ -1346,36 +1327,8 @@ export default function App() {
           </article>
           
         </div>
-        
-        <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
-          <MetricCard
-            title="Procesando"
-            value={counts.processing}
-            icon={Loader2}
-            tone="blue"
-          />
-          <MetricCard
-            title="Finalizadas"
-            value={counts.finished}
-            icon={CheckCircle2}
-            tone="green"
-          />
-          <MetricCard
-            title="Con error"
-            value={counts.error}
-            icon={AlertTriangle}
-            tone="rose"
-          />
-          <MetricCard
-            title="Notificadas"
-            value={counts.notified}
-            icon={Mail}
-            tone="slate"
-          />
-        </div>
         <article>
-          <div className="space-y-4">
+          <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center" id="buscar">
                 <div className="flex items-start gap-3">
                   <div>
                     <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
@@ -1385,7 +1338,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2 justify-end">
                   {[
                     { key: "all", label: "Todas" },
                     { key: "active", label: "Activas" },
@@ -1397,7 +1350,7 @@ export default function App() {
                       type="button"
                       onClick={() => setFilter(item.key)}
                       className={`rounded-full border px-3 py-2 text-sm text-center transition ${filter === item.key
-                          ? "border-slate-900 bg-slate-900 text-white"
+                          ? "bg-color-primary text-white"
                           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                         }`}
                     >
@@ -1405,24 +1358,52 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-              </div>
-              <div className="mb-4 space-y-2">
-                <Label htmlFor="task-search-id">Localizar tarea</Label>
-                <Input
-                  id="task-search-id"
-                  className="h-11 rounded-xl border-slate-300 bg-white"
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value)}
-                  placeholder="Introduce el identificador que recibiste por e-mail"
-                />
-                <p className="text-xs text-slate-500">
-                  Usa este campo para recuperar una tarea concreta y consultar su estado o descargar sus resultados.
-                </p>
-              </div>
+          </div>
+          <div className="mb-6 space-y-2 mt-2">
+            <Label htmlFor="task-search-id" className="text-xl">Localizar tarea</Label>
+            <Input
+              id="task-search-id"
+              className="h-11 rounded-xl border-slate-300 bg-white"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              placeholder="Introduce el identificador que recibiste por e-mail"
+            />
+            <p className="text-xs mb-2">
+              Usa este campo para recuperar una tarea concreta y consultar su estado o descargar sus resultados.
+            </p>
+          </div>
         </article>
-        
+        <article>
+          <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
+            <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
+            <MetricCard
+              title="Procesando"
+              value={counts.processing}
+              icon={Loader2}
+              tone="blue"
+            />
+            <MetricCard
+              title="Finalizadas"
+              value={counts.finished}
+              icon={CheckCircle2}
+              tone="green"
+            />
+            <MetricCard
+              title="Con error"
+              value={counts.error}
+              icon={AlertTriangle}
+              tone="rose"
+            />
+            <MetricCard
+              title="Notificadas"
+              value={counts.notified}
+              icon={Mail}
+              tone="slate"
+            />
+          </div>
+        </article>
         <div className="flex flex-col md:flex-row gap-6">
-          <Card className="md:w-1/2 rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
+          <Card className="md:w-1/2 rounded-[2rem] border-primary">
             <CardContent>
               {filteredTasks.length === 0 ? (
                 <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
@@ -1565,19 +1546,28 @@ export default function App() {
             </CardContent>
           </Card>
 
-          <Card className="md:w-1/2 rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
+          <Card className="md:w-1/2 rounded-[2rem] border-primary">
             <CardHeader className="pb-4">
-              <div className="flex items-start gap-3">
-                <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                  <FileText className="h-5 w-5" />
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg text-slate-950 bg-color-primary2 items-center flex text-white new-rounded py-3 px-4">
+                      <Download className="h-6 w-6 mr-2" />
+                      RESULTADOS
+                  </CardTitle>
                 </div>
                 <div>
-                  <CardTitle className="text-xl text-slate-950">
-                    Detalle y resultados
-                  </CardTitle>
-                  <CardDescription className="mt-1 text-slate-600">
-                    {/* Estado, salidas, notificación y descarga del resultado final. */}
-                  </CardDescription>
+                  {selectedTask && (
+                    <div className="mb-3 flex items-center gap-2">
+                      <Badge
+                        className={`rounded-full px-3 py-1 ${selectedTaskStatus.badge}`}
+                      >
+                        {selectedTaskStatus.label}
+                      </Badge>
+                      <Badge variant="outline" className="rounded-full px-3 py-1">
+                        {getTaskTypeLabel(selectedTask.task_type)}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -1592,56 +1582,40 @@ export default function App() {
               ) : (
                 <div className="space-y-5">
                   <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="mb-3 flex items-center gap-2">
-                      <Badge
-                        className={`rounded-full px-3 py-1 ${selectedTaskStatus.badge}`}
-                      >
-                        {selectedTaskStatus.label}
-                      </Badge>
-                      <Badge variant="outline" className="rounded-full px-3 py-1">
-                        {getTaskTypeLabel(selectedTask.task_type)}
-                      </Badge>
-                    </div>
+                    
 
-                    <h3 className="text-lg font-semibold text-slate-950">
-                      {selectedTask.resource || "Tarea"}
+                    <h3 className="text-lg font-semibold">
+                      {selectedTask.resource || "Tarea #"} : {selectedTask.id}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      ID: {selectedTask.id}
-                    </p>
 
-                    <div className="mt-4 grid gap-2 text-sm text-slate-600">
+                    <div className="mt-2 grid gap-2 text-normal">
                       {selectedTaskMainDate?.value ? (
-                        <div className="rounded-xl bg-slate-50 px-3 py-2">
-                          <span className="font-medium text-slate-800">
+                        <div className="rounded-xl bg-slate-50">
+                          <span className="font-medium">
                             {selectedTaskMainDate.label}:
                           </span>{" "}
                           {formatDate(selectedTaskMainDate.value)}
                         </div>
                       ) : null}
-                      <div className="rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="font-medium text-slate-800">Email:</span>{" "}
+                      <div className="rounded-xl bg-slate-50">
+                        <span className="font-medium">Email:</span>{" "}
                         {selectedTask.email || "-"}
                       </div>
-                      <div className="rounded-xl bg-slate-50 px-3 py-2">
-                        <span className="font-medium text-slate-800">Notificación:</span>{" "}
+                      <div className="rounded-xl bg-slate-50 hidden">
+                        <span className="font-medium">Notificación:</span>{" "}
                         {getNotificationState(selectedTask)}
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <p className="mb-2 text-sm font-medium text-slate-900">
-                      Flujo del trabajo
-                    </p>
                     <PipelineMini task={selectedTask} />
                   </div>
-                  
                   {selectedTask.notes ? (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <div className="mb-2 flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-slate-500" />
-                        <p className="text-xs font-semibold text-slate-500">
+                        <FileText className="h-4 w-4" />
+                        <p className="text-base font-semibold">
                           Observaciones:
                         </p>
                       </div>
@@ -1698,7 +1672,7 @@ export default function App() {
 
                   {selectedTaskAudioFile ? (
                     <div className="space-y-3">
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-base font-medium">
                         Escuchar resultado
                       </p>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -1730,10 +1704,88 @@ export default function App() {
                       </div>
                     </div>
                   ) : null}
+                  {selectedTask?.task_type === "documents" ?(
+                    <div className="space-y-3">
+                      <div className="relative flex items-center justify-center">
+                          <ProgressCircle value={30/*{selectedTask?.accessibility_score || 0}*/} />
+                      </div>
+                      
+                      <p className="text-xl font-medium text-center">
+                        Accesibilidad
+                      </p>
+                      <div className="mt-4">
+                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
+                          <span className="">{/*selectedTask?.percentage_color*/30 ?? 0}%</span>
+                        </div>
+
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
+                              /*selectedTask?.percentage_color*/ 30 ?? 0
+                            )}`}
+                            style={{
+                              width: `${Math.max(
+                                0,
+                                Math.min(100, 30 /*selectedTask?.percentage_color*/ ?? 0),
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xl font-semibold mt-2">
+                            Contraste de colores {/*selectedTask?.category.title  ?? 0*/}
+                        </p>
+                      </div>
+                      <div className="mt-4">
+                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
+                          <span className="">{/*selectedTask?.percentage_color*/50 ?? 0}%</span>
+                        </div>
+
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
+                              /*selectedTask?.percentage_color*/ 50 ?? 0
+                            )}`}
+                            style={{
+                              width: `${Math.max(
+                                0,
+                                Math.min(100, 63 /*selectedTask?.percentage_color*/ ?? 0),
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xl font-semibold mt-2">
+                            Tamaños de textos {/*selectedTask?.category.title  ?? 0*/}
+                        </p>
+                      </div>
+                      <div className="mt-4">
+                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
+                          <span className="">{/*selectedTask?.percentage_color*/75 ?? 0}%</span>
+                        </div>
+
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
+                              /*selectedTask?.percentage_color*/ 75 ?? 0
+                            )}`}
+                            style={{
+                              width: `${Math.max(
+                                0,
+                                Math.min(100, 75 /*selectedTask?.percentage_color*/ ?? 0),
+                              )}%`,
+                            }}
+                          />
+                        </div>
+                        <p className="text-xl font-semibold mt-2 mb-8">
+                            Accesibilidad {/*selectedTask?.category.title  ?? 0*/}
+                        </p>
+                      </div>
+                          
+                    </div>
+                  ) : null}
 
                   {selectedTaskJsonFiles.length > 0 ? (
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium text-slate-900">
+                    <div className="space-y-3 mt-4">
+                      <p className="text-base font-medium">
                         Transcripción y traducciones
                       </p>
 
@@ -1745,7 +1797,7 @@ export default function App() {
                               type="button"
                               onClick={() => setSelectedJsonTab(item.key)}
                               className={`rounded-full border px-3 py-1.5 text-sm transition ${selectedJsonTab === item.key
-                                  ? "border-slate-900 bg-slate-900 text-white"
+                                  ? "border-color-primary bg-color-primary text-white"
                                   : "border-slate-200 bg-white text-slate-700"
                                 }`}
                             >
@@ -1812,18 +1864,8 @@ export default function App() {
 
                         <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
 
-                          <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                            {selectedTaskCurrentDownloadMeta.icon === "/galicia-icon.png" ? (
-                              <img
-                                src={selectedTaskCurrentDownloadMeta.icon}
-                                alt={selectedTaskCurrentDownloadMeta.label}
-                                className="h-6 w-6 rounded-sm object-contain"
-                              />
-                            ) : selectedTaskCurrentDownloadMeta.icon ? (
-                              <span className="leading-none">{selectedTaskCurrentDownloadMeta.icon}</span>
-                            ) : null}
-
-                            <span>
+                          <div className="flex items-center gap-2 text-base font-medium">
+                            <span className="text-base font-medium">
                               Descargas en {selectedTaskCurrentDownloadMeta.label}
                             </span>
                           </div>
@@ -1901,15 +1943,13 @@ export default function App() {
         </div>
         <main>
           <div className="mt-6">
-            <Card className="rounded-[2rem] border-white/70 bg-white/85 shadow-xl shadow-slate-200/60 backdrop-blur">
+            <Card className="rounded-[2rem] border-primary">
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl bg-slate-900 p-3 text-white">
-                    <Cpu className="h-5 w-5" />
-                  </div>
                   <div>
-                    <CardTitle className="text-xl text-slate-950">
-                      Información del procesamiento
+                    <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
+                      <Cpu className="h-6 w-6 mr-2" />
+                        Información del procesamiento
                     </CardTitle>
                     <CardDescription className="mt-1 text-slate-600">
                       Seguimiento técnico y registro de ejecución de la tarea seleccionada.
@@ -1997,7 +2037,7 @@ export default function App() {
         </main>
         
       </section>
-      <footer className="mt-10 pt-6 pb-2 color-primary">
+      <footer className="mt-2 pt-6 pb-2 color-primary">
           <div className="mx-auto max-w-5xl px-4 text-center">
             <p className="mx-auto max-w-5xl color-primary text-sm">
               Aiuda se desarrolla en el marco de Labs UniversitarIA, iniciativa de colaboración interuniversitaria
