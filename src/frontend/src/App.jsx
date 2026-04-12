@@ -24,7 +24,9 @@ import {
   CirclePlus,
   Presentation,
   Volume2,
-  UserCog
+  UserCog,
+  Menu,
+  X
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -394,6 +396,7 @@ export default function App() {
   const { t, lang,changeLanguage } = useI18n()
   const languagesNav = ["es","pt","gl"]
   const [profile, setProfile] = useState("teacher")
+  const [menuOpen, setMenuOpen] = useState(false)
 
   function toggleProfile() {
     setProfile((prev) =>
@@ -993,7 +996,7 @@ export default function App() {
   return (
     <div className="min-h-screen">
       <header className="bg-color-primary backdrop-blur border-b border-slate-200 sticky top-0 z-50">
-        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+        <div className="relative mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
           <img
             src={AIUDA_NEGATIVE_LOGOS_SRC}
             alt="Aiuda"
@@ -1007,8 +1010,10 @@ export default function App() {
             </a>
           </nav>
           
-
-          <nav className="flex gap-4 text-normal font-medium text-slate-700">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white">
+            {menuOpen ? <X /> : <Menu />}
+          </button>
+          <nav className="hidden md:flex items-center gap-6 text-normal font-medium text-slate-700">
             {languagesNav.map((lng) => (
               <button
                 key={lng}
@@ -1018,11 +1023,41 @@ export default function App() {
                 {lng.toUpperCase()}
               </button>
             ))}
+
+            <button onClick={toggleProfile} className="flex items-center">
+              <UserCog className="h-5 w-5 mr-2" />
+              {profile === "teacher" ? "Docente" : "Técnico"}
+            </button>
+          </nav>
+          <nav
+            className={`
+              absolute top-full right-0 w-full bg-white shadow-lg p-4
+              flex-col gap-4 text-normal font-medium text-slate-700 bg-color-primary
+              ${menuOpen ? "flex" : "hidden"}
+              md:hidden
+            `}
+          >
+            {languagesNav.map((lng) => (
+              <button
+                key={lng}
+                onClick={() => {
+                  changeLanguage(lng)
+                  setMenuOpen(false)
+                }}
+                className={lang === lng ? "active" : ""}
+              >
+                {lng.toUpperCase()}
+              </button>
+            ))}
+
             <button
-              onClick={toggleProfile}
-              className="flex"
+              onClick={() => {
+                toggleProfile()
+                setMenuOpen(false)
+              }}
+              className="flex items-center"
             >
-              <UserCog className="h1 mr-2"></UserCog>
+              <UserCog className="h-5 w-5 mr-2" />
               {profile === "teacher" ? "Docente" : "Técnico"}
             </button>
           </nav>
@@ -1677,7 +1712,7 @@ export default function App() {
 
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="download"
                             className="h-9 rounded-xl"
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskCurrentVideoFile])}
                           >
@@ -1712,7 +1747,7 @@ export default function App() {
 
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="download"
                             className="h-9 rounded-xl"
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskAudioFile])}
                           >
