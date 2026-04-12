@@ -24,7 +24,7 @@ import {
   CirclePlus,
   Presentation,
   Volume2,
-  ListChecks
+  UserCog
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -392,7 +392,14 @@ export default function App() {
   const logScrollRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
   const { t, lang,changeLanguage } = useI18n()
-  const languagesNav = ["es","pt","gl", "en"]
+  const languagesNav = ["es","pt","gl"]
+  const [profile, setProfile] = useState("teacher")
+
+  function toggleProfile() {
+    setProfile((prev) =>
+      prev === "teacher" ? "technical" : "teacher"
+    )
+  }
 
   async function fetchTasks(silent = false) {
     if (!silent) setLoadingTasks(true)
@@ -1011,8 +1018,14 @@ export default function App() {
                 {lng.toUpperCase()}
               </button>
             ))}
+            <button
+              onClick={toggleProfile}
+              className="flex"
+            >
+              <UserCog className="h1 mr-2"></UserCog>
+              {profile === "teacher" ? "Docente" : "Técnico"}
+            </button>
           </nav>
-
         </div>
       </header>
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
@@ -1337,27 +1350,28 @@ export default function App() {
                     </CardTitle>
                   </div>
                 </div>
-
-                <div className="flex gap-2 justify-end">
-                  {[
-                    { key: "all", label: "Todas" },
-                    { key: "active", label: "Activas" },
-                    { key: "finished", label: "Finalizadas" },
-                    { key: "error", label: "Errores" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setFilter(item.key)}
-                      className={`rounded-full border px-3 py-2 text-sm text-center transition ${filter === item.key
-                          ? "bg-color-primary text-white"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                        }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
+                {profile === "technical" && (
+                  <div className="flex gap-2 justify-end">
+                    {[
+                      { key: "all", label: "Todas" },
+                      { key: "active", label: "Activas" },
+                      { key: "finished", label: "Finalizadas" },
+                      { key: "error", label: "Errores" },
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setFilter(item.key)}
+                        className={`rounded-full border px-3 py-2 text-sm text-center transition ${filter === item.key
+                            ? "bg-color-primary text-white"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
           </div>
           <div className="mb-6 space-y-2 mt-2">
             <Label htmlFor="task-search-id" className="text-xl">Localizar tarea</Label>
@@ -1373,36 +1387,39 @@ export default function App() {
             </p>
           </div>
         </article>
-        <article>
-          <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
-            <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
-            <MetricCard
-              title="Procesando"
-              value={counts.processing}
-              icon={Loader2}
-              tone="blue"
-            />
-            <MetricCard
-              title="Finalizadas"
-              value={counts.finished}
-              icon={CheckCircle2}
-              tone="green"
-            />
-            <MetricCard
-              title="Con error"
-              value={counts.error}
-              icon={AlertTriangle}
-              tone="rose"
-            />
-            <MetricCard
-              title="Notificadas"
-              value={counts.notified}
-              icon={Mail}
-              tone="slate"
-            />
-          </div>
-        </article>
+        {profile === "technical" && (
+          <article>
+            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
+              <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
+              <MetricCard
+                title="Procesando"
+                value={counts.processing}
+                icon={Loader2}
+                tone="blue"
+              />
+              <MetricCard
+                title="Finalizadas"
+                value={counts.finished}
+                icon={CheckCircle2}
+                tone="green"
+              />
+              <MetricCard
+                title="Con error"
+                value={counts.error}
+                icon={AlertTriangle}
+                tone="rose"
+              />
+              <MetricCard
+                title="Notificadas"
+                value={counts.notified}
+                icon={Mail}
+                tone="slate"
+              />
+            </div>
+          </article>
+        )}
         <div className="flex flex-col md:flex-row gap-6">
+          {profile === "technical" && (
           <Card className="md:w-1/2 rounded-[2rem] border-primary">
             <CardContent>
               {filteredTasks.length === 0 ? (
@@ -1545,8 +1562,10 @@ export default function App() {
               )}
             </CardContent>
           </Card>
-
-          <Card className="md:w-1/2 rounded-[2rem] border-primary">
+          )}
+          <Card className={`${
+                    profile === "technical" ? "md:w-1/2" : "md:w-[60%] md:mx-auto"
+                  } rounded-[2rem] border-primary`}>
             <CardHeader className="pb-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
@@ -1941,8 +1960,8 @@ export default function App() {
             </CardContent>
           </Card>
         </div>
-        <main>
-          <div className="mt-6">
+        {profile === "technical" && (
+          <article className="mt-6">
             <Card className="rounded-[2rem] border-primary">
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-3">
@@ -2033,8 +2052,8 @@ export default function App() {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </main>
+          </article>
+        )}
         
       </section>
       <footer className="mt-2 pt-6 pb-2 color-primary">
