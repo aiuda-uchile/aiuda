@@ -614,7 +614,7 @@ def send_task_email(task_id: str) -> None:
         if task.get("status") == "finished"
         else "Proceso con error"
     )
-    subject = f"ALUDA | {subject_status} | {task.get('input_filename', 'recurso')}"
+    subject = f"Aiuda | {subject_status} | {task.get('input_filename', 'recurso')}"
 
     body_text = build_report_text(task, output_files)
     logo_cid = make_msgid(domain="aluda.local")

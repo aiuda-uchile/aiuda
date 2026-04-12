@@ -1336,6 +1336,161 @@ export default function App() {
                     </p>
                     
                   </div>
+                  {/*BLOQUE FER*/}
+                  <div className="hidden">
+                    <div className="rounded-2xl bg-slate-50">
+                        {form.mode === "multimedia" ? (
+                          <>
+                            {form.mediaType === "video" && (
+                              <div className="rounded-xl bg-white px-3">
+                                {form.options.burn_subtitles && (
+                                  <div className="pt-1">
+                                    <p className="text-xs text-slate-500 mb-2">Idiomas para vídeo subtitulado:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {[{ code: "original", label: "Original", icon: "🎬" }, ...TARGET_LANGS].map((lang) => {
+                                        const active = (form.options.burn_langs || []).includes(lang.code)
+                                        return (
+                                          <button
+                                            key={lang.code}
+                                            type="button"
+                                            onClick={() => {
+                                              const current = new Set(form.options.burn_langs || [])
+                                              if (active) current.delete(lang.code)
+                                              else current.add(lang.code)
+                                              setOption("burn_langs", Array.from(current))
+                                            }}
+                                            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
+                                              active
+                                                ? "bg-sky-100 border-sky-300 text-sky-800"
+                                                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                                            }`}
+                                          >
+                                            {lang.label}
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {form.mediaType === "video" && (
+                              <div className="rounded-xl bg-white">
+                                <Label className="text-base">Formatos de salida</Label>
+                                <p className="text-xs text-slate-500 mb-2">
+                                  Seleccioná qué archivos generar para cada idioma.
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {[
+                                    { id: "srt", label: "SRT (subtítulos)" },
+                                    { id: "vtt", label: "VTT (subtítulos web)" },
+                                    { id: "txt", label: "TXT (texto plano)" },
+                                    { id: "json", label: "JSON (datos)" },
+                                  ].map(({ id, label }) => {
+                                    const active = (form.options.output_formats || []).includes(id)
+                                    return (
+                                      <button
+                                        key={id}
+                                        type="button"
+                                        onClick={() => {
+                                          const current = new Set(form.options.output_formats || [])
+                                          if (active) current.delete(id)
+                                          else current.add(id)
+                                          setOption("output_formats", Array.from(current))
+                                        }}
+                                        className={`rounded-full px-3 py-1 text-base font-medium border transition-colors ${
+                                          active
+                                            ? "bg-sky-100 border-sky-300 text-sky-800"
+                                            : "bg-white border-slate-200 text-slate-500"
+                                        }`}
+                                      >
+                                        {label}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="rounded-xl bg-white px-3 py-3 space-y-2">
+                              {form.options.translation && (
+                                <div className="pt-1">
+                                  <p className="text-base mb-2 font-medium">Idiomas destino:</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {TARGET_LANGS.map((lang) => {
+                                      const active = (form.options.file_langs || []).includes(lang.code)
+                                      return (
+                                        <button
+                                          key={lang.code}
+                                          type="button"
+                                          onClick={() => {
+                                            const current = new Set(form.options.file_langs || [])
+                                            if (active) current.delete(lang.code)
+                                            else current.add(lang.code)
+                                            setOption("file_langs", Array.from(current))
+                                          }}
+                                          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-medium border transition-colors ${
+                                            active
+                                              ? "bg-sky-100 border-sky-300 text-sky-800"
+                                              : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                                          }`}
+                                        >
+                                          {lang.label}
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+
+                    </div>
+                    <Separator />
+                    {form.mode === "multimedia" && (
+                      <div className="space-y-4">
+                        <div className="space-y-3">
+                          <Label className="text-base mb-0 mt-2">Idiomas para archivos</Label>
+                          <p className="text-xs text-slate-500">
+                            Seleccioná en qué idiomas generar los archivos de subtítulos y texto.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {TARGET_LANGS.map((lang) => {
+                              const active = (form.options.file_langs || []).includes(lang.code)
+                              const enabled = (form.options.output_formats || []).length > 0
+                              return (
+                                <button
+                                  key={lang.code}
+                                  type="button"
+                                  disabled={!enabled}
+                                  onClick={() => {
+                                    const current = new Set(form.options.file_langs || [])
+                                    if (active) current.delete(lang.code)
+                                    else current.add(lang.code)
+                                    setOption("file_langs", Array.from(current))
+                                  }}
+                                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-medium border transition-colors ${
+                                    !enabled
+                                      ? "opacity-40 cursor-not-allowed bg-white border-slate-200 text-slate-400"
+                                      : active
+                                      ? "bg-sky-100 border-sky-300 text-sky-800"
+                                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                                  }`}
+                                >
+                                  {lang.label}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      )}
+                  </div>
+                  {/*FIN BLOQUE FER*/}
                   <Button
                     className="h-12 w-full btn-color-primary-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
                     type="submit"
