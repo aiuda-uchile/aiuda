@@ -1607,7 +1607,6 @@ export default function App() {
           </article>
         )}
         <div className="flex flex-col md:flex-row gap-6">
-          {profile === "technical" && (
           <Card className="md:w-1/2 rounded-[2rem] border-primary">
             <CardContent>
               {filteredTasks.length === 0 ? (
@@ -1750,10 +1749,7 @@ export default function App() {
               )}
             </CardContent>
           </Card>
-          )}
-          <Card className={`${
-                    profile === "technical" ? "md:w-1/2" : "md:w-[60%] md:mx-auto"
-                  } rounded-[2rem] border-primary`}>
+          <Card className={`md:w-1/2 rounded-[2rem] border-primary`}>
             <CardHeader className="pb-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
