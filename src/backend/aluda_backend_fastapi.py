@@ -413,7 +413,7 @@ def build_report_html(
 
     logo_html = ""
     if logo_cid:
-        logo_html = f'<img src="cid:{escape(logo_cid)}" alt="ALUDA" style="display:block;height:52px;width:auto;border:0;">'
+        logo_html = f'<img src="cid:{escape(logo_cid)}" alt="Aiuda" style="display:block;height:52px;width:auto;border:0;">'
 
     footer_image_html = ""
     if footer_cid:
@@ -458,7 +458,7 @@ def build_report_html(
             <tr>
               <td style="padding:22px 32px 0 32px;">
                 <div style="padding:16px 18px;background:#EEF6F7;border:1px solid #D6EAEC;border-radius:12px;font-size:14px;line-height:1.7;color:#1F4D57;">
-                  Puedes acceder ahora a los resultados desde la plataforma de ALUDA.
+                  Puedes acceder ahora a los resultados desde la plataforma de Aiuda.
                 </div>
               </td>
             </tr>
@@ -469,7 +469,7 @@ def build_report_html(
             </tr>
             <tr>
               <td style="padding:24px 32px 18px 32px;">
-                <div style="font-size:14px;line-height:1.7;color:#425466;">Gracias por utilizar ALUDA.</div>
+                <div style="font-size:14px;line-height:1.7;color:#425466;">Gracias por utilizar Aiuda.</div>
               </td>
             </tr>
           </table>
@@ -547,7 +547,7 @@ def build_report_text(
 
     lines.extend([
         "",
-        "Puedes acceder ahora a los resultados desde la plataforma de ALUDA.",
+        "Puedes acceder ahora a los resultados desde la plataforma de Aiuda.",
         "",
         f"ID de la tarea: {task_id}",
     ])
@@ -562,7 +562,7 @@ def build_report_text(
 
     lines.extend([
         "",
-        "Gracias por utilizar ALUDA.",
+        "Gracias por utilizar Aiuda.",
         "",
         ALUDA_FOOTER_TEXT,
     ])
