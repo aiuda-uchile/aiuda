@@ -372,6 +372,343 @@ function getColorClassByPercentage(value) {
   if (value <= 60) return "bg-process"
   return "bg-color-primary3"
 }
+function getDocumentPreviewData(raw) {
+  if (!raw || typeof raw !== "object") return null
+
+  const summary = raw.summary && typeof raw.summary === "object" ? raw.summary : null
+  const issues = Array.isArray(raw.issues) ? raw.issues : []
+  const recommendations = Array.isArray(raw.recommendations)
+    ? raw.recommendations
+    : []
+  const visualMetrics =
+    raw.visual_metrics && typeof raw.visual_metrics === "object"
+      ? raw.visual_metrics
+      : null
+
+  if (!summary && issues.length === 0 && recommendations.length === 0 && !visualMetrics) return null
+
+  return { summary, issues, recommendations, visualMetrics }
+}
+
+const DOCUMENT_CATEGORY_META = {
+  color_blindness: {
+    label: "Daltonismo/color",
+    description: "Uso del color y contraste",
+  },
+  small_fonts: {
+    label: "Tamaño de letra",
+    description: "Legibilidad tipográfica",
+  },
+  long_texts: {
+    label: "Textos largos",
+    description: "Densidad del contenido",
+  },
+}
+
+const DOCUMENT_CATEGORY_ALIASES = {
+  color_blindness: ["color_blindness", "color_contrast", "cvd_risk"],
+  small_fonts: ["small_fonts"],
+  long_texts: ["long_texts", "dense_text"],
+}
+
+function getDocumentScoreLabel(score) {
+  if (score === null || score === undefined) return "Sin datos"
+  if (score >= 90) return "Muy bien"
+  if (score >= 75) return "Bien"
+  if (score >= 55) return "Atención"
+  return "Revisar"
+}
+
+function getDocumentScoreTone(score) {
+  if (score === null || score === undefined) {
+    return {
+      badge: "border-slate-200 bg-slate-50 text-slate-600",
+      bar: "bg-slate-300",
+    }
+  }
+  if (score >= 90) {
+    return {
+      badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      bar: "bg-emerald-500",
+    }
+  }
+  if (score >= 75) {
+    return {
+      badge: "border-sky-200 bg-sky-50 text-sky-700",
+      bar: "bg-sky-500",
+    }
+  }
+  if (score >= 55) {
+    return {
+      badge: "border-amber-200 bg-amber-50 text-amber-700",
+      bar: "bg-amber-500",
+    }
+  }
+  return {
+    badge: "border-red-200 bg-red-50 text-red-700",
+    bar: "bg-red-500",
+  }
+}
+
+function clampDocumentStateIndex(index) {
+  return Math.max(0, Math.min(3, index))
+}
+
+function getDocumentStateIndex(label) {
+  const order = ["Revisar", "Atención", "Bien", "Muy bien"]
+  const idx = order.indexOf(label)
+  return idx === -1 ? 0 : idx
+}
+
+function downgradeDocumentState(label, steps = 1) {
+  if (!label || label === "Sin datos") return label
+  const order = ["Revisar", "Atención", "Bien", "Muy bien"]
+  const nextIndex = clampDocumentStateIndex(getDocumentStateIndex(label) - steps)
+  return order[nextIndex]
+}
+
+function getPenaltyFromSeverity(severityCode) {
+  if (severityCode === "high") return 25
+  if (severityCode === "medium") return 12
+  return 6
+}
+
+function formatMetricValue(value, digits = 2) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return null
+  return numeric.toFixed(digits)
+}
+
+function singularOrPlural(value, singular, plural) {
+  return value === 1 ? singular : plural
+}
+
+function extractFirstPointSize(issues = []) {
+  for (const issue of issues) {
+    const text = `${issue?.description || ""} ${issue?.excerpt || ""}`
+    const match = text.match(/(\d+(?:[.,]\d+)?)\s*pt/i)
+    if (match) return match[1].replace(",", ".")
+  }
+  return null
+}
+
+function getWorstFigureSample(visualMetrics) {
+  const rows = Array.isArray(visualMetrics?.figure_metric_samples)
+    ? visualMetrics.figure_metric_samples
+    : []
+
+  if (rows.length === 0) return null
+
+  return [...rows]
+    .filter((row) => row && row.worst_cvd_ratio !== null && row.worst_cvd_ratio !== undefined)
+    .sort((a, b) => Number(a?.worst_cvd_ratio ?? 1) - Number(b?.worst_cvd_ratio ?? 1))[0] || null
+}
+
+function getDocumentCategoryStateLabel(
+  score,
+  { criticalCount = 0, warningCount = 0, hasAttention = false } = {},
+) {
+  if (score === null || score === undefined) return "Sin datos"
+
+  let label = getDocumentScoreLabel(score)
+
+  if (criticalCount >= 2) {
+    label = downgradeDocumentState(label, 2)
+  } else if (criticalCount >= 1) {
+    label = downgradeDocumentState(label, 1)
+  } else if ((warningCount > 0 || hasAttention) && label === "Muy bien") {
+    label = "Bien"
+  }
+
+  return label
+}
+
+function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
+  const figureSummary = visualMetrics?.figure_metrics_summary || {}
+  const worstFigureSample = getWorstFigureSample(visualMetrics)
+  const criticalCount = matchedIssues.filter(
+    (issue) => issue?.severity_code === "high",
+  ).length
+  const warningCount = matchedIssues.filter(
+    (issue) => issue?.severity_code && issue?.severity_code !== "high",
+  ).length
+
+  if (key === "color_blindness") {
+    const issueCount = matchedIssues.length
+    const minCvdRatio = Number(figureSummary?.min_cvd_ratio)
+    const hasMinCvdRatio = Number.isFinite(minCvdRatio)
+    const hasAttention = issueCount === 0 && hasMinCvdRatio && minCvdRatio < 0.92
+    const worstMode =
+      worstFigureSample?.worst_cvd_type ||
+      worstFigureSample?.cvd_type ||
+      worstFigureSample?.worst_cvd ||
+      null
+
+    if (issueCount > 0) {
+      const issueLabel = criticalCount > 0 ? "incid. crítica" : "incid."
+      const issueLabelPlural = criticalCount > 0 ? "incid. críticas" : "incid."
+      if (hasMinCvdRatio && worstMode) {
+        return {
+          detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} · ${worstMode}`,
+          hasAttention: false,
+          criticalCount,
+          warningCount,
+        }
+      }
+
+      return {
+        detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} · Revisar figuras dependientes del color`,
+        hasAttention: false,
+        criticalCount,
+        warningCount,
+      }
+    }
+
+    if (hasAttention) {
+      const detail = hasMinCvdRatio
+        ? worstMode
+          ? `Sin incidencias críticas · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} · ${worstMode}`
+          : `Sin incidencias críticas · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)}`
+        : "Sin incidencias críticas · 1 figura a vigilar"
+
+      return {
+        detail,
+        hasAttention: true,
+        criticalCount,
+        warningCount,
+      }
+    }
+
+    return {
+      detail: "Sin riesgos CVD relevantes",
+      hasAttention: false,
+      criticalCount,
+      warningCount,
+    }
+  }
+
+  if (key === "small_fonts") {
+    const pointSize = extractFirstPointSize(matchedIssues)
+    const issueCount = matchedIssues.length
+
+    if (issueCount > 0) {
+      return {
+        detail: pointSize
+          ? `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} · ejemplo detectado: ${pointSize} pt`
+          : `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} · revisar legibilidad tipográfica`,
+        hasAttention: false,
+        criticalCount,
+        warningCount,
+      }
+    }
+
+    return {
+      detail: "Sin alertas relevantes de tamaño",
+      hasAttention: false,
+      criticalCount,
+      warningCount,
+    }
+  }
+
+  if (key === "long_texts") {
+    const issueCount = matchedIssues.length
+
+    if (issueCount > 0) {
+      return {
+        detail: `${issueCount} ${singularOrPlural(issueCount, "sección con exceso de texto", "secciones con exceso de texto")}`,
+        hasAttention: false,
+        criticalCount,
+        warningCount,
+      }
+    }
+
+    return {
+      detail: "Sin sobrecarga textual relevante",
+      hasAttention: false,
+      criticalCount,
+      warningCount,
+    }
+  }
+
+  return {
+    detail: matchedIssues.length > 0 ? `${matchedIssues.length} incid.` : "Sin alertas relevantes",
+    hasAttention: false,
+    criticalCount,
+    warningCount,
+  }
+}
+
+function buildGlobalDocumentSummary(categorySummaries) {
+  if (!Array.isArray(categorySummaries) || categorySummaries.length === 0) {
+    return "Sin datos suficientes para resumir el análisis."
+  }
+
+  const issueCategory = [...categorySummaries]
+    .filter((item) => item.count > 0)
+    .sort((a, b) => a.score - b.score || b.count - a.count)[0]
+
+  if (issueCategory) {
+    return `Principal mejora pendiente: ${issueCategory.label.toLowerCase()}`
+  }
+
+  const attentionCategory = categorySummaries.find((item) => item.hasAttention)
+  if (attentionCategory?.key === "color_blindness") {
+    return "Documento correcto, con alguna figura a vigilar por color."
+  }
+
+  return "Sin alertas visuales relevantes en esta revisión."
+}
+
+function buildDocumentCategorySummaries(preview) {
+  const issues = Array.isArray(preview?.issues) ? preview.issues : []
+  const visualMetrics = preview?.visualMetrics || null
+
+  return Object.entries(DOCUMENT_CATEGORY_META).map(([key, meta]) => {
+    const aliases = DOCUMENT_CATEGORY_ALIASES[key] || [key]
+    const matchedIssues = issues.filter((issue) =>
+      aliases.includes(issue?.category_code),
+    )
+
+    const penalty = matchedIssues.reduce(
+      (sum, issue) => sum + getPenaltyFromSeverity(issue?.severity_code),
+      0,
+    )
+
+    const detailMeta = buildDocumentCategoryDetail(key, matchedIssues, visualMetrics)
+    const attentionPenalty = detailMeta.hasAttention ? 10 : 0
+    const score = Math.max(0, 100 - penalty - attentionPenalty)
+
+    return {
+      key,
+      ...meta,
+      score,
+      count: matchedIssues.length,
+      tone: getDocumentScoreTone(score),
+      labelScore: getDocumentCategoryStateLabel(score, {
+        criticalCount: detailMeta.criticalCount,
+        warningCount: detailMeta.warningCount,
+        hasAttention: detailMeta.hasAttention,
+      }),
+      detail: detailMeta.detail,
+      hasAttention: detailMeta.hasAttention,
+      criticalCount: detailMeta.criticalCount,
+      warningCount: detailMeta.warningCount,
+    }
+  })
+}
+
+function buildGlobalDocumentScore(categorySummaries) {
+  const valid = categorySummaries.filter(
+    (item) => typeof item.score === "number",
+  )
+
+  if (valid.length === 0) return null
+
+  const avg =
+    valid.reduce((sum, item) => sum + item.score, 0) / valid.length
+
+  return Math.round(avg)
+}
 
 export default function App() {
   const [form, setForm] = useState(INITIAL_FORM)
@@ -859,6 +1196,10 @@ export default function App() {
     () => getJsonPreviewItems(selectedTask?.outputs ?? []),
     [selectedTask],
   )
+  const selectedTaskVisibleJsonFiles = useMemo(
+    () => selectedTaskJsonFiles.filter((item) => item.key !== "original"),
+    [selectedTaskJsonFiles],
+  )
 
 
   const selectedTaskCurrentJsonFile =
@@ -903,7 +1244,40 @@ export default function App() {
       video: findSubtitledVideoOutput(outputs, key),
     }
   }, [selectedTask, selectedTaskCurrentJsonFile])
+  {/*BLOQUE NUEVO*/}
+  const selectedTaskIsDocument = selectedTask?.task_type === "documents"
 
+  const selectedTaskDocumentOriginalFile = useMemo(() => {
+    if (!selectedTaskIsDocument) return null
+
+    return selectedTask?.input_filename || null
+  }, [selectedTask, selectedTaskIsDocument])
+
+  const selectedTaskCurrentDocumentPreview = getDocumentPreviewData(
+    selectedTaskCurrentJsonCacheKey
+      ? previewJsonByFile[selectedTaskCurrentJsonCacheKey]
+      : null,
+  )
+
+  const selectedTaskDocumentCategorySummaries = useMemo(
+    () => buildDocumentCategorySummaries(selectedTaskCurrentDocumentPreview),
+    [selectedTaskCurrentDocumentPreview],
+  )
+
+  const selectedTaskDocumentGlobalScore = useMemo(
+    () => buildGlobalDocumentScore(selectedTaskDocumentCategorySummaries),
+    [selectedTaskDocumentCategorySummaries],
+  )
+
+  const selectedTaskDocumentGlobalTone = useMemo(
+    () => getDocumentScoreTone(selectedTaskDocumentGlobalScore),
+    [selectedTaskDocumentGlobalScore],
+  )
+
+  const selectedTaskDocumentGlobalSummary = useMemo(
+    () => buildGlobalDocumentSummary(selectedTaskDocumentCategorySummaries),
+    [selectedTaskDocumentCategorySummaries],
+  )
 
   const selectedTaskCurrentVideoFile =
     selectedTaskCurrentDownloadFiles.video || selectedTaskOriginalVideoFile || null
@@ -1913,111 +2287,36 @@ export default function App() {
                       </div>
                     </div>
                   ) : null}
-                  {selectedTask?.task_type === "documents" ?(
-                    <div className="space-y-3">
-                      <div className="relative flex items-center justify-center">
-                          <ProgressCircle value={30/*{selectedTask?.accessibility_score || 0}*/} />
-                      </div>
-                      
-                      <p className="text-xl font-medium text-center">
-                        Accesibilidad
-                      </p>
-                      <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
-                          <span className="">{/*selectedTask?.percentage_color*/30 ?? 0}%</span>
-                        </div>
-
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
-                              /*selectedTask?.percentage_color*/ 30 ?? 0
-                            )}`}
-                            style={{
-                              width: `${Math.max(
-                                0,
-                                Math.min(100, 30 /*selectedTask?.percentage_color*/ ?? 0),
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                        <p className="text-xl font-semibold mt-2">
-                            Contraste de colores {/*selectedTask?.category.title  ?? 0*/}
-                        </p>
-                      </div>
-                      <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
-                          <span className="">{/*selectedTask?.percentage_color*/50 ?? 0}%</span>
-                        </div>
-
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
-                              /*selectedTask?.percentage_color*/ 50 ?? 0
-                            )}`}
-                            style={{
-                              width: `${Math.max(
-                                0,
-                                Math.min(100, 63 /*selectedTask?.percentage_color*/ ?? 0),
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                        <p className="text-xl font-semibold mt-2">
-                            Tamaños de textos {/*selectedTask?.category.title  ?? 0*/}
-                        </p>
-                      </div>
-                      <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-end text-xl font-semibold">
-                          <span className="">{/*selectedTask?.percentage_color*/75 ?? 0}%</span>
-                        </div>
-
-                        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            className={`h-full rounded-full transition-all ${getColorClassByPercentage(
-                              /*selectedTask?.percentage_color*/ 75 ?? 0
-                            )}`}
-                            style={{
-                              width: `${Math.max(
-                                0,
-                                Math.min(100, 75 /*selectedTask?.percentage_color*/ ?? 0),
-                              )}%`,
-                            }}
-                          />
-                        </div>
-                        <p className="text-xl font-semibold mt-2 mb-8">
-                            Accesibilidad {/*selectedTask?.category.title  ?? 0*/}
-                        </p>
-                      </div>
-                          
-                    </div>
-                  ) : null}
-
+                  
                   {selectedTaskJsonFiles.length > 0 ? (
-                    <div className="space-y-3 mt-4">
-                      <p className="text-base font-medium">
-                        Transcripción y traducciones
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium text-slate-900">
+                        {selectedTaskIsDocument ? "Informe de Accesibilidad del Documento" : "Transcripción y traducciones"}
                       </p>
 
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          {selectedTaskJsonFiles.map((item) => (
-                            <button
-                              key={item.key}
-                              type="button"
-                              onClick={() => setSelectedJsonTab(item.key)}
-                              className={`rounded-full border px-3 py-1.5 text-sm transition ${selectedJsonTab === item.key
-                                  ? "border-color-primary bg-color-primary text-white"
-                                  : "border-slate-200 bg-white text-slate-700"
+                        {selectedTaskVisibleJsonFiles.length > 0 ? (
+                          <div className="mb-3 flex flex-wrap gap-2">
+                            {selectedTaskVisibleJsonFiles.map((item) => (
+                              <button
+                                key={item.key}
+                                type="button"
+                                onClick={() => setSelectedJsonTab(item.key)}
+                                className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                                  selectedJsonTab === item.key
+                                    ? "border-slate-900 bg-slate-900 text-white"
+                                    : "border-slate-200 bg-white text-slate-700"
                                 }`}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
 
                         <div className="rounded-xl border border-slate-200 bg-white p-4">
                           {selectedTaskCurrentJsonCacheKey &&
-                            loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
+                          loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
                             <div className="flex items-center gap-2 text-sm text-slate-500">
                               <Loader2 className="h-4 w-4 animate-spin" />
                               Cargando vista previa...
@@ -2027,6 +2326,87 @@ export default function App() {
                             <div className="text-sm text-red-600">
                               {previewJsonByFile[selectedTaskCurrentJsonCacheKey].error}
                             </div>
+                          ) : selectedTaskIsDocument ? (
+                            selectedTaskCurrentDocumentPreview ? (
+                              <div className="space-y-4">
+                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                  <p className="text-sm font-semibold text-slate-900">
+                                    Evaluación Global
+                                  </p>
+
+                                  <div className="mt-3 flex items-end justify-between gap-3">
+                                    <div
+                                      className={`inline-flex rounded-full border px-4 py-1.5 ${
+                                        selectedTaskDocumentGlobalTone.badge
+                                      }`}
+                                    >
+                                      <span className="text-3xl font-semibold tracking-tight leading-none">
+                                        {selectedTaskDocumentGlobalScore ?? "-"}%
+                                      </span>
+                                    </div>
+
+                                    <p className="text-sm font-medium text-slate-500">
+                                      {selectedTaskDocumentGlobalScore !== null
+                                        ? getDocumentScoreLabel(selectedTaskDocumentGlobalScore)
+                                        : "Sin datos"}
+                                    </p>
+                                  </div>
+
+                                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+                                    <div
+                                      className={`h-full rounded-full ${selectedTaskDocumentGlobalTone.bar}`}
+                                      style={{ width: `${selectedTaskDocumentGlobalScore ?? 0}%` }}
+                                    />
+                                  </div>
+
+                                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                                    {selectedTaskDocumentGlobalSummary}
+                                  </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                  {selectedTaskDocumentCategorySummaries.map((item) => (
+                                    <div
+                                      key={item.key}
+                                      className="rounded-xl border border-slate-200 bg-white px-4 py-3"
+                                    >
+                                      <div className="flex items-start justify-between gap-3">
+                                        <p className="min-w-0 text-sm font-semibold leading-tight text-slate-900">
+                                          {item.label}
+                                        </p>
+
+                                        <Badge
+                                          variant="outline"
+                                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs ${item.tone.badge}`}
+                                        >
+                                          {item.score === null ? "—" : `${item.score}%`}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                                        <div
+                                          className={`h-full rounded-full ${item.tone.bar}`}
+                                          style={{ width: `${item.score ?? 0}%` }}
+                                        />
+                                      </div>
+
+                                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                                        <span>{item.labelScore}</span>
+                                        <span>{item.count} incid.</span>
+                                      </div>
+
+                                      <p className="mt-2 text-xs leading-5 text-slate-600">
+                                        {item.detail}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-slate-500">
+                                No hay contenido disponible para esta vista.
+                              </div>
+                            )
                           ) : selectedTaskCurrentJsonCacheKey &&
                             previewJsonByFile[selectedTaskCurrentJsonCacheKey]?.segments?.length > 0 ? (
                             <div className="max-h-80 space-y-3 overflow-auto">
@@ -2042,20 +2422,23 @@ export default function App() {
                                       ref={(el) => {
                                         if (el) segmentRefs.current[segment.id] = el
                                       }}
-                                      className={`rounded-xl border px-3 py-3 transition ${isActive
+                                      className={`rounded-xl border px-3 py-3 transition ${
+                                        isActive
                                           ? "border-sky-300 bg-sky-50 shadow-sm"
                                           : "border-slate-200 bg-slate-50"
-                                        }`}
+                                      }`}
                                     >
                                       <div
-                                        className={`mb-1 text-xs font-medium ${isActive ? "text-sky-800" : "text-sky-700"
-                                          }`}
+                                        className={`mb-1 text-xs font-medium ${
+                                          isActive ? "text-sky-800" : "text-sky-700"
+                                        }`}
                                       >
                                         {formatSeconds(segment.start)} - {formatSeconds(segment.end)}
                                       </div>
                                       <p
-                                        className={`text-sm leading-6 ${isActive ? "text-slate-900" : "text-slate-700"
-                                          }`}
+                                        className={`text-sm leading-6 ${
+                                          isActive ? "text-slate-900" : "text-slate-700"
+                                        }`}
                                       >
                                         {segment.text}
                                       </p>
@@ -2072,74 +2455,131 @@ export default function App() {
                         </div>
 
                         <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                            {selectedTaskCurrentDownloadMeta.icon === "/galicia-icon.png" ? (
+                              <img
+                                src={selectedTaskCurrentDownloadMeta.icon}
+                                alt={selectedTaskCurrentDownloadMeta.label}
+                                className="h-6 w-6 rounded-sm object-contain"
+                              />
+                            ) : selectedTaskCurrentDownloadMeta.icon ? (
+                              <span className="leading-none">{selectedTaskCurrentDownloadMeta.icon}</span>
+                            ) : null}
 
-                          <div className="flex items-center gap-2 text-base font-medium">
-                            <span className="text-base font-medium">
-                              Descargas en {selectedTaskCurrentDownloadMeta.label}
+                            <span>
+                              {selectedTaskIsDocument
+                                ? selectedTaskCurrentJsonFile?.key === "original"
+                                  ? "Descargas disponibles"
+                                  : `Descargas en ${selectedTaskCurrentDownloadMeta.label}`
+                                : selectedTaskCurrentJsonFile?.key === "original"
+                                ? "Descargas disponibles"
+                                : `Descargas en ${selectedTaskCurrentDownloadMeta.label}`}
                             </span>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-2">
-                            {selectedTaskCurrentDownloadFiles.txt ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="h-9 w-full justify-center rounded-xl"
-                                onClick={() =>
-                                  downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.txt])
-                                }
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                Texto
-                              </Button>
-                            ) : null}
+                          {selectedTaskIsDocument ? (
+                            <div className="grid grid-cols-2 gap-2">
+                              {selectedTaskDocumentOriginalFile ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskDocumentOriginalFile])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Original
+                                </Button>
+                              ) : null}
 
-                            {selectedTaskCurrentDownloadFiles.srt ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="h-9 w-full justify-center rounded-xl"
-                                onClick={() =>
-                                  downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.srt])
-                                }
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                SRT
-                              </Button>
-                            ) : null}
+                              {selectedTaskCurrentDownloadFiles.pdf ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.pdf])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Informe PDF
+                                </Button>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              {selectedTaskCurrentDownloadFiles.txt ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.txt])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Texto
+                                </Button>
+                              ) : null}
 
-                            {selectedTaskCurrentDownloadFiles.vtt ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="h-9 w-full justify-center rounded-xl"
-                                onClick={() =>
-                                  downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.vtt])
-                                }
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                VTT
-                              </Button>
-                            ) : null}
+                              {selectedTaskCurrentDownloadFiles.srt ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.srt])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  SRT
+                                </Button>
+                              ) : null}
 
-                            {selectedTaskCurrentDownloadFiles.json ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="h-9 w-full justify-center rounded-xl"
-                                onClick={() =>
-                                  downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.json])
-                                }
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                JSON
-                              </Button>
-                            ) : null}
+                              {selectedTaskCurrentDownloadFiles.vtt ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.vtt])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  VTT
+                                </Button>
+                              ) : null}
 
+                              {selectedTaskCurrentDownloadFiles.json ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.json])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  JSON
+                                </Button>
+                              ) : null}
 
-                          </div>
-
-
+                              {selectedTaskCurrentDownloadFiles.html ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="h-9 w-full justify-center rounded-xl"
+                                  onClick={() =>
+                                    downloadGroup(selectedTask.id, [selectedTaskCurrentDownloadFiles.html])
+                                  }
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  HTML
+                                </Button>
+                              ) : null}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
