@@ -57,22 +57,28 @@ import { useI18n } from "./i18n/i18n"
 import ProgressCircle from "./components/scripts/ProgressCircle"
 import MetricCard from "./components/scripts/MetricCard"
 
+const BASE_URL = import.meta.env.BASE_URL || "/"
+
+function getPublicAssetUrl(path) {
+  return `${BASE_URL}${String(path).replace(/^\/+/, "")}`
+}
+
 const TARGET_LANGS = [
   { code: "es", label: "Español", icon: "🇪🇸" },
   { code: "en", label: "Inglés", icon: "🇬🇧" },
   { code: "pt", label: "Portugués", icon: "🇧🇷" },
-  { code: "gl", label: "Gallego", icon: "/galicia-icon.png" },
+  { code: "gl", label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
 ]
 
 const LANGUAGE_META = {
   es: { label: "Español", icon: "🇪🇸" },
   en: { label: "Inglés", icon: "🇬🇧" },
   pt: { label: "Portugués", icon: "🇧🇷" },
-  gl: { label: "Gallego", icon: "/galicia-icon.png" },
+  gl: { label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
 }
 
-const AIUDA_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02.png"
-const AIUDA_NEGATIVE_LOGOS_SRC = "/assets/iconos/1x/aiuda-logo02-negativo.png"
+const AIUDA_LOGOS_SRC = getPublicAssetUrl("assets/iconos/1x/aiuda-logo02.png")
+const AIUDA_NEGATIVE_LOGOS_SRC = getPublicAssetUrl("assets/iconos/1x/aiuda-logo02-negativo.png")
 const TASKS_PER_PAGE = 6
 const INITIAL_FORM = {
   mode: "multimedia",
@@ -249,7 +255,7 @@ function getJsonPreviewItems(outputs = []) {
   const icons = {
     es: "🇪🇸",
     en: "🇬🇧",
-    gl: "/galicia-icon.png",
+    gl: getPublicAssetUrl("galicia-icon.png"),
     pt: "🇵🇹",
   }
 
@@ -2252,15 +2258,15 @@ export default function App() {
           <div className="mt-4 bg-color-primary row p-4 flex flex-col md:flex-row gap-10 pb-8 items-center justify-center">
             <div className="md:w-1/5 flex flex-col gap-3 md:items-center">
               <img src={AIUDA_NEGATIVE_LOGOS_SRC} alt="Aiuda"  className="logo-footer1"/>
-              <img src="assets/logos/universitariaia.png" alt="Universitaria IA" className="logo-footer2"/>
+              <img src={getPublicAssetUrl("assets/logos/universitariaia.png")} alt="Universitaria IA" className="logo-footer2"/>
             </div>
             <div className="md:w-1/3 flex flex-col gap-3">
               <h4 className="text-white">Organizado por:</h4>
-              <img src="assets/logos/logos.png" alt="" />
+              <img src={getPublicAssetUrl("assets/logos/logos.png")} alt="" />
             </div>
             <div className="md:w-1/4 flex flex-col gap-3">
               <h4 className="text-white">Con el apoyo de:</h4>
-              <img src="assets/logos/logo_aecid.png" alt="AECID" className="logo-footer4"/>
+              <img src={getPublicAssetUrl("assets/logos/logo_aecid.png")} alt="AECID" className="logo-footer4"/>
             </div>
           </div>
           
