@@ -402,6 +402,27 @@ export default function App() {
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
 
+
+  useEffect(() => {
+    if (window.location.pathname === "/aluda/admin") {
+      setProfile("technical")
+    }
+  }, [])
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get("q")
+
+    if (q) {
+      setSearchId(q)
+      setTimeout(() => {
+      const el = document.getElementById("buscar")
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" })
+      }
+    }, 100)
+    }
+  }, [])
+
   function toggleProfile() {
     setProfile((prev) =>
       prev === "teacher" ? "technical" : "teacher"
