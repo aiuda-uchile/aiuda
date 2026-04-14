@@ -124,6 +124,7 @@ dependencies:
     - rapidocr==3.7.0
     - referencing==0.37.0
     - regex==2026.2.28
+    - reportlab
     - requests==2.32.5
     - rich==14.3.3
     - rpds-py==0.30.0

@@ -41,7 +41,7 @@ LOGS_DIR = PROJECT_DIR / "logs"
 
 AUDIO_SCRIPT = BASE_DIR / "scripts" / "aluda_audio_pipeline.py"
 VIDEO_SCRIPT = BASE_DIR / "scripts" / "aluda_video_pipeline.py"
-DOCS_SCRIPT = BASE_DIR / "scripts" / "aluda_docs_translate.py"
+DOCS_SCRIPT = BASE_DIR / "scripts" / "aluda_docs_pipeline.py"
 
 DEFAULT_AUDIO_TARGETS = ["es", "en", "pt", "gl"]
 DEFAULT_VIDEO_TARGETS = ["es", "en", "pt", "gl"]
