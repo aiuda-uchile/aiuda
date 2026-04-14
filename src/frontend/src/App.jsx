@@ -404,7 +404,7 @@ export default function App() {
 
 
   useEffect(() => {
-    if (window.location.pathname === "/aluda/admin") {
+    if (window.location.pathname === "/aiuda/admin") {
       setProfile("technical")
     }
   }, [])
