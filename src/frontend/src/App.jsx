@@ -114,7 +114,7 @@ function formatDate(value) {
 
 function getTaskTypeLabel(taskType) {
   if (taskType === "audio") return "Audio"
-  if (taskType === "video") return "Vídeo"
+  if (taskType === "video") return "video"
   if (taskType === "documents") return "Documentos"
   return taskType || "Tarea"
 }
@@ -304,9 +304,9 @@ function PipelineMini({ task }) {
   const steps = [
     { key: "uploaded", label: "Enviado" },
     { key: "queued", label: "En cola" },
-    { key: "engine", label: "Aiuda" },
-    { key: "ready", label: "Listo" },
-    { key: "notified", label: "Avisado" },
+    { key: "engine", label: "En proceso" },
+    { key: "ready", label: "Finalizado" },
+    { key: "notified", label: "Notificado" },
   ]
 
   function stepActive(stepKey) {
@@ -739,6 +739,27 @@ export default function App() {
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
 
+  useEffect(() => {
+    if (window.location.pathname === "/aiuda/admin") {
+      setProfile("technical")
+    }
+  }, [])
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get("q")
+
+    if (q) {
+      setSearchId(q)
+      setTimeout(() => {
+      const el = document.getElementById("buscar")
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" })
+      }
+    }, 100)
+    }
+  }, [])
+  
+  
   function toggleProfile() {
     setProfile((prev) =>
       prev === "teacher" ? "technical" : "teacher"
@@ -1465,56 +1486,56 @@ export default function App() {
                 <h4 className="mt-4 text-xl font-semibold color-primary">{t("intro-question")}</h4>
               </div>
               <div className="features">
-                  <div className="feature-title bg-color-secondary w-auto new-rounded p-2 mt-4 mb-4 font-semibold color-primary inline-block">
-                      <h4 className="flex align-items-center">
-                        <CirclePlay className="mr-2 w-6 h-6"></CirclePlay> VIDEO / AUDIO
+                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
+                      <h4 className="flex align-items-center text-lg font-semibold">
+                        VIDEO / AUDIO
                       </h4>
                   </div>
                   <div className="flex gap-6">
                     <div className="w-1/3 text center">
                         <Captions className="m-auto w-10 h-10"></Captions>
-                        <h4 className="text-center">Subtítulos del video</h4>
+                        <h4 className="text-center text-base">Subtítulos del video</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <ListMinus className="m-auto w-10 h-10"></ListMinus>
-                        <h4 className="text-center">Versión en texto</h4>
+                        <h4 className="text-center text-base">Versión en texto</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <Languages className="m-auto w-10 h-10"></Languages>
-                        <h4 className="text-center">Traducción a otros idiomas</h4>
+                        <h4 className="text-center text-base">Traducción a otros idiomas</h4>
                     </div>
                   </div>
               </div>
               <div className="features ">
-                  <div className="feature-title bg-color-secondary w-auto new-rounded px-4 py-2 mt-4 mb-4 font-semibold color-primary inline-block">
-                      <h4 className="flex align-items-center">
-                        <FileText className="mr-2 w-6 h-6"></FileText> DOCUMENTOS
+                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
+                      <h4 className="flex align-items-center text-lg font-semibold">
+                         DOCUMENTOS
                       </h4>
                       
                   </div>
                   <div className="flex gap-6">
                     <div className="w-1/3 text center">
                         <PersonStanding className="m-auto w-10 h-10"></PersonStanding>
-                        <h4 className="text-center">Evaluación de Accesibilidad</h4>
+                        <h4 className="text-center text-base">Evaluación de Accesibilidad</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <PaintBucket className="m-auto w-10 h-10"></PaintBucket>
-                        <h4 className="text-center">Daltonismo Color</h4>
+                        <h4 className="text-center text-base">Baja Visión / Color</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <CaseSensitive className="m-auto w-10 h-10"></CaseSensitive>
-                        <h4 className="text-center">Tamaño de letra</h4>
+                        <h4 className="text-center text-base">Tamaño de letra</h4>
                     </div>
                   </div>
               </div>
-              <div className="flex flex-col md:flex-row gap-2 md:gap-10 mt-6">
-                <div className="md:w-1/2">
+              <div className="flex flex-col lg:flex-row gap-2 md:gap-10 mt-6">
+                <div className="lg:w-1/2">
                   <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
-                  <p className="text-sm">Te enviará una notificación, cuando el procesamiento haya finalizado</p>
+                  <p className="text-sm">Aiuda te enviará una notificación cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.</p>
                 </div>
-                <div className="md:w-1/2">
+                <div className="lg:w-1/2">
                   <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
-                  <div className="flex gap-2 md:gap-6">
+                  <div className="flex gap-2">
                     <div className="text-center">
                         <div className="lang">
                           ES
@@ -1550,8 +1571,7 @@ export default function App() {
               <CardHeader className="">
                 <div className="flex items-start gap-3">
                   <div>
-                    <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
-                      <CirclePlus className="h-6 w-6 mr-2" />
+                    <CardTitle className="text-lg text-slate-950 items-center flex text-white new-rounded text-color-primary font-bold px-2">
                       NUEVA TAREA
                     </CardTitle>
                   </div>
@@ -1679,9 +1699,9 @@ export default function App() {
                       <p className="text-xs text-slate-500">
                         {form.mode === "multimedia"
                           ? form.mediaType === "video"
-                            ? "Formatos de video para subtitulado, transcripción y traducción."
-                            : "Formatos habituales: MP3, WAV, M4A y OGG."
-                          : "PDF o presentaciones para evaluación de accesibilidad."}
+                            ? "Formatos admitidos: MP4, AVI"
+                            : "Formatos admitidos: MP3, WAV, M4A y OGG."
+                          : "Formatos admitidos:.pdf,.ppt,.pptx,.doc,.docx"}
                       </p>
 
                       <div className="mt-2 ml-4 shrink-0 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white">
@@ -1693,7 +1713,7 @@ export default function App() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-semibold text-base">E-mail:</Label>
+                    <Label htmlFor="email" className="text-semibold text-base">Correo Electrónico:</Label>
                     <Input
                       id="email"
                       type="email"
@@ -1704,13 +1724,13 @@ export default function App() {
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder="Ingresá tu email, por ejemplo nombre@universidad.com"
+                      placeholder="Ingresá tu dirección de correo, por ejemplo nombre@universidad.com"
                     />
                     {errors.email && (
                       <p className="text-sm text-red-600">{errors.email}</p>
                     )}
                     <p className="text-xs text-slate-500">
-                      Usaremos este correo para enviarte el identificador de la tarea y avisarte cuando finalice la tarea.
+                      Usaremos este correo para enviarte una notificación, cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.
                     </p>
                     
                   </div>
@@ -1723,7 +1743,7 @@ export default function App() {
                               <div className="rounded-xl bg-white px-3">
                                 {form.options.burn_subtitles && (
                                   <div className="pt-1">
-                                    <p className="text-xs text-slate-500 mb-2">Idiomas para vídeo subtitulado:</p>
+                                    <p className="text-xs text-slate-500 mb-2">Idiomas para video subtitulado:</p>
                                     <div className="flex flex-wrap gap-2">
                                       {[{ code: "original", label: "Original", icon: "🎬" }, ...TARGET_LANGS].map((lang) => {
                                         const active = (form.options.burn_langs || []).includes(lang.code)
@@ -1874,7 +1894,7 @@ export default function App() {
                     type="submit"
                     disabled={submitting}
                   >
-                    Enviar tarea
+                    Enviar Archivo
                     {submitting ? (
                       <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
@@ -1896,8 +1916,7 @@ export default function App() {
                       ¡Recibimos tu archivo!
                     </p>
                     <p>
-                         Va a tardar un tiempo en procesarse. <br />
-                         Ni bien esté listo, te va a llegar un email con un número identificador para que puedas buscar y encontrar los archivos a descargar.
+                         Cuando el proceso haya finalizado recibirás una notificación con el código necesario para localizar tu tarea.
                     </p>
                     
                   </div>
@@ -1912,8 +1931,7 @@ export default function App() {
           <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center" id="buscar">
                 <div className="flex items-start gap-3">
                   <div>
-                    <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
-                      <Search className="h-6 w-6 mr-2" />
+                    <CardTitle className="text-lg text-color-primary py-1 px-4 font-bold text-lg">
                         LOCALIZÁ TU TAREA
                     </CardTitle>
                   </div>
@@ -1942,16 +1960,15 @@ export default function App() {
                 )}
           </div>
           <div className="mb-6 space-y-2 mt-2">
-            <Label htmlFor="task-search-id" className="text-xl">Localizar tarea</Label>
             <Input
               id="task-search-id"
               className="h-11 rounded-xl border-slate-300 bg-white"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Introduce el identificador que recibiste por e-mail"
+              placeholder="Ingresá el código que recibiste por correo electrónico"
             />
             <p className="text-xs mb-2">
-              Usa este campo para recuperar una tarea concreta y consultar su estado o descargar sus resultados.
+              En este campo podrás recuperar una tarea concreta, consultar su estado o descargar tus resultados.
             </p>
           </div>
         </article>
@@ -2133,8 +2150,7 @@ export default function App() {
             <CardHeader className="pb-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <CardTitle className="text-lg text-slate-950 bg-color-primary2 items-center flex text-white new-rounded py-3 px-4">
-                      <Download className="h-6 w-6 mr-2" />
+                  <CardTitle className="text-lg text-color-primary font-bold py-1 px-2">
                       RESULTADOS
                   </CardTitle>
                 </div>
@@ -2218,7 +2234,7 @@ export default function App() {
                   {selectedTask?.task_type === "video" && selectedTaskCurrentVideoFile ? (
                     <div className="space-y-3">
                       <p className="text-sm font-medium text-slate-900">
-                        Ver vídeo subtitulado
+                        Ver video subtitulado
                       </p>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <video
@@ -2229,24 +2245,25 @@ export default function App() {
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
-                          Tu navegador no soporta reproducción de vídeo.
+                          Tu navegador no soporta reproducción de video.
                         </video>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
                           <p className="text-xs text-slate-500">
                             {selectedTaskCurrentJsonFile
                               ? `Subtítulos mostrados en ${selectedTaskCurrentDownloadMeta.label}.`
-                              : "Vídeo con subtítulos incrustados."}
+                              : "video con subtítulos incrustados."}
                           </p>
 
                           <Button
                             type="button"
                             variant="download"
                             className="h-9 rounded-xl"
+                            size="md"
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskCurrentVideoFile])}
                           >
                             <Download className="mr-2 h-4 w-4" />
-                            Vídeo
+                            Descargar video
                           </Button>
                         </div>
                       </div>
@@ -2278,10 +2295,11 @@ export default function App() {
                             type="button"
                             variant="download"
                             className="h-9 rounded-xl"
+                            size="md"
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskAudioFile])}
                           >
                             <Download className="mr-2 h-4 w-4" />
-                            Audio
+                            Descargar Audio
                           </Button>
                         </div>
                       </div>
@@ -2290,8 +2308,36 @@ export default function App() {
                   
                   {selectedTaskJsonFiles.length > 0 ? (
                     <div className="space-y-3">
+                      {/*Textos Nuevos*/}
+                      <h3 className="text-base mb-2">Analizamos tu presentación e identificamos oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
+                      <ul className="mb-10 mt-4">
+                        <li className="mb-4">
+                          <h4 className="text-base font-semibold">Comprensión visual</h4>
+                          <p className="text-base">
+                            Tamaño de letra, interlineado, tipografía, cantidad de texto y contraste.
+                          </p>
+                        </li>
+                        <li className="mb-4">
+                          <h4 className="text-base font-semibold">Organización del contenido</h4>
+                          <p className="text-base">
+                            Jerarquía visual y cantidad de elementos por diapositiva.
+                          </p>
+                        </li>
+                        <li className="mb-4">
+                          <h4 className="text-base font-semibold">Uso de imágenes</h4>
+                          <p className="text-base">
+                            Presencia de descripciones.
+                          </p>
+                        </li>
+                        <li className="mb-4">
+                          <h4 className="text-base font-semibold">Tiempo de lectura</h4>
+                          <p className="text-base">
+                            Estimación del tiempo total de la presentación
+                          </p>
+                        </li>
+                      </ul>
                       <p className="text-sm font-medium text-slate-900">
-                        {selectedTaskIsDocument ? "Informe de Accesibilidad del Documento" : "Transcripción y traducciones"}
+                        {selectedTaskIsDocument ? "Informe de Accesibilidad del Documento" : "Ver transcripción"}
                       </p>
 
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -2503,7 +2549,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                  Informe PDF
+                                   Descargar recomendaciones
                                 </Button>
                               ) : null}
                             </div>

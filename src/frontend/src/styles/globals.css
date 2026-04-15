@@ -128,9 +128,9 @@ nav button.active, nav a.active{
     margin-bottom: 0.5em;
     background-color: var(--color-grey-1);
 }
-.features h4{
-    font-weight: 600;
-    font-size: 0.9em;
+.features .text-base{
+    line-height: 1.1em;
+    font-size: 1em!important;
 }
 /*--FOOTER--*/
 footer h4{
