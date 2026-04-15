@@ -2305,7 +2305,9 @@ export default function App() {
                       </div>
                     </div>
                   ) : null}
-                  {/*Textos Nuevos
+                  
+                  {selectedTask?.task_type === "documents" ?(
+                    <div className="space-y-3 mt-10">
                       <h3 className="text-base mb-2">Analizamos tu presentación e identificamos oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
                       <ul className="mb-10 mt-4">
                         <li className="mb-4">
@@ -2332,7 +2334,9 @@ export default function App() {
                             Estimación del tiempo total de la presentación
                           </p>
                         </li>
-                      </ul>*/}
+                      </ul>
+                    </div>
+                  ) : null}
                   {selectedTaskJsonFiles.length > 0 ? (
                     <div className="space-y-3">
                       <p className="text-sm font-medium text-slate-900">
