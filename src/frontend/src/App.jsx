@@ -71,6 +71,7 @@ const TARGET_LANGS = [
 ]
 
 const LANGUAGE_META = {
+  original: { label: "Original", icon: "📄" },
   es: { label: "Español", icon: "🇪🇸" },
   en: { label: "Inglés", icon: "🇬🇧" },
   pt: { label: "Portugués", icon: "🇧🇷" },
@@ -1253,6 +1254,8 @@ export default function App() {
         srt: null,
         vtt: null,
         json: null,
+        html: null,
+        pdf: null,
         video: null,
       }
     }
@@ -1262,10 +1265,12 @@ export default function App() {
       srt: findVariantOutput(outputs, key, "srt"),
       vtt: findVariantOutput(outputs, key, "vtt"),
       json: selectedTaskCurrentJsonFile.filename,
+      html: findVariantOutput(outputs, key, "html"),
+      pdf: findVariantOutput(outputs, key, "pdf"),
       video: findSubtitledVideoOutput(outputs, key),
     }
   }, [selectedTask, selectedTaskCurrentJsonFile])
-  {/*BLOQUE NUEVO*/}
+ 
   const selectedTaskIsDocument = selectedTask?.task_type === "documents"
 
   const selectedTaskDocumentOriginalFile = useMemo(() => {
@@ -2305,7 +2310,6 @@ export default function App() {
                       </div>
                     </div>
                   ) : null}
-                  
                   {selectedTask?.task_type === "documents" ?(
                     <div className="space-y-3 mt-10">
                       <h3 className="text-base mb-2">Analizamos tu presentación e identificamos oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
@@ -2334,14 +2338,14 @@ export default function App() {
                             Estimación del tiempo total de la presentación
                           </p>
                         </li>
-                      </ul>
+                      </ul>                         
                     </div>
                   ) : null}
                   {selectedTaskJsonFiles.length > 0 ? (
                     <div className="space-y-3">
-                      <p className="text-sm font-medium text-slate-900">
+                      <h4 className="text-lg font-medium">
                         {selectedTaskIsDocument ? "Informe de Accesibilidad del Documento" : "Ver transcripción"}
-                      </p>
+                      </h4>
 
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         {selectedTaskVisibleJsonFiles.length > 0 ? (
@@ -2375,88 +2379,7 @@ export default function App() {
                             <div className="text-sm text-red-600">
                               {previewJsonByFile[selectedTaskCurrentJsonCacheKey].error}
                             </div>
-                          ) : selectedTaskIsDocument ? (
-                            selectedTaskCurrentDocumentPreview ? (
-                              <div className="space-y-4">
-                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                  <p className="text-sm font-semibold text-slate-900">
-                                    Evaluación Global
-                                  </p>
-
-                                  <div className="mt-3 flex items-end justify-between gap-3">
-                                    <div
-                                      className={`inline-flex rounded-full border px-4 py-1.5 ${
-                                        selectedTaskDocumentGlobalTone.badge
-                                      }`}
-                                    >
-                                      <span className="text-3xl font-semibold tracking-tight leading-none">
-                                        {selectedTaskDocumentGlobalScore ?? "-"}%
-                                      </span>
-                                    </div>
-
-                                    <p className="text-sm font-medium text-slate-500">
-                                      {selectedTaskDocumentGlobalScore !== null
-                                        ? getDocumentScoreLabel(selectedTaskDocumentGlobalScore)
-                                        : "Sin datos"}
-                                    </p>
-                                  </div>
-
-                                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
-                                    <div
-                                      className={`h-full rounded-full ${selectedTaskDocumentGlobalTone.bar}`}
-                                      style={{ width: `${selectedTaskDocumentGlobalScore ?? 0}%` }}
-                                    />
-                                  </div>
-
-                                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                                    {selectedTaskDocumentGlobalSummary}
-                                  </p>
-                                </div>
-
-                                <div className="space-y-3">
-                                  {selectedTaskDocumentCategorySummaries.map((item) => (
-                                    <div
-                                      key={item.key}
-                                      className="rounded-xl border border-slate-200 bg-white px-4 py-3"
-                                    >
-                                      <div className="flex items-start justify-between gap-3">
-                                        <p className="min-w-0 text-sm font-semibold leading-tight text-slate-900">
-                                          {item.label}
-                                        </p>
-
-                                        <Badge
-                                          variant="outline"
-                                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs ${item.tone.badge}`}
-                                        >
-                                          {item.score === null ? "—" : `${item.score}%`}
-                                        </Badge>
-                                      </div>
-
-                                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                                        <div
-                                          className={`h-full rounded-full ${item.tone.bar}`}
-                                          style={{ width: `${item.score ?? 0}%` }}
-                                        />
-                                      </div>
-
-                                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                                        <span>{item.labelScore}</span>
-                                        <span>{item.count} incid.</span>
-                                      </div>
-
-                                      <p className="mt-2 text-xs leading-5 text-slate-600">
-                                        {item.detail}
-                                      </p>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-sm text-slate-500">
-                                No hay contenido disponible para esta vista.
-                              </div>
-                            )
-                          ) : selectedTaskCurrentJsonCacheKey &&
+                          ) : selectedTaskIsDocument ? null : selectedTaskCurrentJsonCacheKey &&
                             previewJsonByFile[selectedTaskCurrentJsonCacheKey]?.segments?.length > 0 ? (
                             <div className="max-h-80 space-y-3 overflow-auto">
                               {previewJsonByFile[selectedTaskCurrentJsonCacheKey].segments.map(
@@ -2512,7 +2435,7 @@ export default function App() {
                                 className="h-6 w-6 rounded-sm object-contain"
                               />
                             ) : selectedTaskCurrentDownloadMeta.icon ? (
-                              <span className="leading-none">{selectedTaskCurrentDownloadMeta.icon}</span>
+                              <span className="leading-none hidden">{selectedTaskCurrentDownloadMeta.icon}</span>
                             ) : null}
 
                             <span>
@@ -2527,7 +2450,7 @@ export default function App() {
                           </div>
 
                           {selectedTaskIsDocument ? (
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-stretch">
                               {selectedTaskDocumentOriginalFile ? (
                                 <Button
                                   type="button"

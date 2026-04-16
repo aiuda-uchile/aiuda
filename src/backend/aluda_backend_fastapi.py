@@ -457,6 +457,7 @@ def build_report_html(
             </tr>
             <tr>
               <td style="padding:22px 32px 0 32px;">
+                
                 <div style="padding:16px 18px;background:#EEF6F7;border:1px solid #D6EAEC;border-radius:12px;font-size:14px;line-height:1.7;color:#1F4D57;">
                   Puedes acceder ahora a los resultados desde la plataforma de Aiuda.
                 </div>
