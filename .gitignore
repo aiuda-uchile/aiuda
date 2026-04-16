@@ -52,4 +52,4 @@ src/frontend/lerna-debug.log*
 # Local environment variables
 .env
 .env.*
-!.env.example
+!.env.exampledocker-compose.yml
