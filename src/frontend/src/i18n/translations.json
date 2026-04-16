@@ -1,8 +1,14 @@
 {
   "es": {
-    "title": "Tecnología que acompaña,inteligencia que incluye",
+    "title": "Tecnología que acompaña, inteligencia que incluye",
     "slogan": "es una plataforma web, alojada en la universidad, que permite trabajar con audios, videos y presentaciones para hacerlos más accesibles",
-    "intro-question": "¿Qué puede hacer Aiuda con tus archivos?"
+    "intro-question": "¿Qué puede hacer Aiuda con tus archivos?",
+    "feature-1": "VIDEO / AUDIO",
+    "feature-2": "VIDEO / AUDIO",
+    "feature-3": "VIDEO / AUDIO",
+    "feature-4": "VIDEO / AUDIO",
+    "feature-5": "VIDEO / AUDIO",
+    "feature-6": "VIDEO / AUDIO"
   },
   "en": {
     "title": "Intelligence for a more accessible education",

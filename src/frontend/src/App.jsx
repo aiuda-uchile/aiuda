@@ -53,9 +53,8 @@ import { Separator } from "@/components/ui/separator"
 import { header } from "framer-motion/client"
 
 import { useI18n } from "./i18n/i18n"
-//scripts
-import ProgressCircle from "./components/scripts/ProgressCircle"
 import MetricCard from "./components/scripts/MetricCard"
+import Terms from "./components/scripts/Terms"
 
 const BASE_URL = import.meta.env.BASE_URL || "/"
 
@@ -739,6 +738,8 @@ export default function App() {
   const languagesNav = ["es","pt","gl"]
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
 
   useEffect(() => {
     if (window.location.pathname === "/aiuda/admin") {
@@ -1704,12 +1705,12 @@ export default function App() {
                       <p className="text-xs text-slate-500">
                         {form.mode === "multimedia"
                           ? form.mediaType === "video"
-                            ? "Formatos admitidos: MP4, AVI"
-                            : "Formatos admitidos: MP3, WAV, M4A y OGG."
-                          : "Formatos admitidos:.pdf,.ppt,.pptx,.doc,.docx"}
+                            ? "Formatos habituales: MP4, MOV, AVI, WMV, MKV y WebM"
+                            : "Formatos habituales: MP3, WAV, M4A y OGG."
+                          : "Formatos habituales:.pdf,.ppt,.pptx,.doc,.docx"}
                       </p>
 
-                      <div className="mt-2 ml-4 shrink-0 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white">
+                      <div className="mt-2 ml-4 shrink-0 rounded-xl bg-color-primary px-3 py-2 text-sm font-medium text-white">
                         Examinar
                       </div>
                     </label>
@@ -1729,7 +1730,7 @@ export default function App() {
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder="Ingresá tu dirección de correo, por ejemplo nombre@universidad.com"
+                      placeholder="Ingresar dirección de correo, por ejemplo nombre@universidad.com"
                     />
                     {errors.email && (
                       <p className="text-sm text-red-600">{errors.email}</p>
@@ -1894,10 +1895,30 @@ export default function App() {
                       )}
                   </div>
                   {/*FIN BLOQUE FER*/}
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      className="mt-1"
+                    />
+
+                    <label htmlFor="terms" className="text-sm text-slate-700">
+                      Acepto los{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowTerms(true)}
+                        className="text-blue-600 underline"
+                      >
+                        términos y condiciones
+                      </button>
+                    </label>
+                  </div>
                   <Button
                     className="h-12 w-full btn-color-primary-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
                     type="submit"
-                    disabled={submitting}
+                    disabled={!acceptedTerms || submitting}
                   >
                     Enviar Archivo
                     {submitting ? (
@@ -1910,6 +1931,7 @@ export default function App() {
                   <Separator />
 
                 </form>
+                {showTerms && <Terms onClose={() => setShowTerms(false)} />}
                 {uiError ? (
                   <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
                     {uiError}
@@ -1921,7 +1943,7 @@ export default function App() {
                       ¡Recibimos tu archivo!
                     </p>
                     <p>
-                         Cuando el proceso haya finalizado recibirás una notificación con el código necesario para localizar tu tarea.
+                         Cuando el proceso haya finalizado recibirás una notificación por correo electrónico con el código necesario para localizar la tarea.
                     </p>
                     
                   </div>
@@ -2189,7 +2211,7 @@ export default function App() {
                     
 
                     <h3 className="text-lg font-semibold">
-                      {selectedTask.resource || "Tarea #"} : {selectedTask.id}
+                      {selectedTask.resource || "Código"} : {selectedTask.id}
                     </h3>
 
                     <div className="mt-2 grid gap-2 text-normal">
@@ -2202,7 +2224,7 @@ export default function App() {
                         </div>
                       ) : null}
                       <div className="rounded-xl bg-slate-50">
-                        <span className="font-medium">Email:</span>{" "}
+                        <span className="font-medium">Correo Electrónico:</span>{" "}
                         {selectedTask.email || "-"}
                       </div>
                       <div className="rounded-xl bg-slate-50 hidden">
@@ -2278,7 +2300,7 @@ export default function App() {
                   {selectedTaskAudioFile ? (
                     <div className="space-y-3">
                       <p className="text-base font-medium">
-                        Escuchar resultado
+                        Reproducir Audio
                       </p>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <audio
@@ -2299,7 +2321,7 @@ export default function App() {
                           <Button
                             type="button"
                             variant="download"
-                            className="h-9 rounded-xl"
+                            className="h-9 rounded-xl hidden"
                             size="md"
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskAudioFile])}
                           >
@@ -2312,12 +2334,12 @@ export default function App() {
                   ) : null}
                   {selectedTask?.task_type === "documents" ?(
                     <div className="space-y-3 mt-10">
-                      <h3 className="text-base mb-2">Analizamos tu presentación e identificamos oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
+                      <h3 className="text-base mb-2">Analizamos tu presentación en busca de oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
                       <ul className="mb-10 mt-4">
                         <li className="mb-4">
                           <h4 className="text-base font-semibold">Comprensión visual</h4>
                           <p className="text-base">
-                            Tamaño de letra, interlineado, tipografía, cantidad de texto y contraste.
+                            Tamaño de letra, interlineado, tipografía, cantidad de texto, color y contraste.
                           </p>
                         </li>
                         <li className="mb-4">
