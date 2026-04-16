@@ -211,10 +211,13 @@ function getNotificationState(task) {
 
 function getAcceptForForm(mode, mediaType) {
   if (mode === "multimedia") {
-    if (mediaType === "video") return "video/*"
-    return "audio/*"
+    if (mediaType === "video") return ".mp4,.mov,.avi,.wmv,.mkv,.webm"
+    // Audio: .doc y .docx reservados para el futuro
+    return ".mp3,.wav,.m4a,.ogg"
   }
-  return ".pdf,.ppt,.pptx,.doc,.docx"
+  // Documentos: .doc y .docx comentados, listos para habilitar en el futuro
+  // return ".pdf,.ppt,.pptx,.doc,.docx"
+  return ".pdf,.ppt,.pptx"
 }
 
 function buildPayload(form) {
@@ -740,15 +743,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        setSuccess(false)
-      }, 4000)
 
-      return () => clearTimeout(timer)
-    }
-  }, [success])
   useEffect(() => {
     if (window.location.pathname === "/aiuda/admin") {
       setProfile("technical")
@@ -905,8 +900,6 @@ export default function App() {
       newErrors.file = "Debes subir un archivo."
     } else if (selectedFile.size === 0) {
       newErrors.file = "El archivo está vacío."
-    } else if (!isValidFileType(selectedFile, form.mode, form.mediaType)) {
-      newErrors.file = "El tipo de archivo no coincide con la opción seleccionada."
     }
 
     if (form.options.translation && form.options.target_langs.length === 0) {
@@ -973,45 +966,14 @@ export default function App() {
       setUiError(error.message || "Error creando la tarea.")
       setErrors({ general: error.message })
       /*Eliminar esto después*/
-        setSuccess(true)
-        setForm(INITIAL_FORM)
-        setSelectedFile(null)
-        setAcceptedTerms(false)
+      setSuccess(true)
+      setForm(INITIAL_FORM)
+      setSelectedFile(null)
+      setAcceptedTerms(false)
       /*Hasta acá*/
     } finally {
       setSubmitting(false)
     }
-  }
-  function isValidFileType(file, mode, mediaType) {
-  if (!file) return false
-
-  const type = file.type
-  const name = file.name.toLowerCase()
-
-  if (mode === "multimedia") {
-    if (mediaType === "video") {
-      return (
-        type.startsWith("video/") ||
-        name.match(/\.(mp4|mov|avi|wmv|mkv|webm)$/)
-      )
-    }
-
-    if (mediaType === "audio") {
-      return (
-        type.startsWith("audio/") ||
-        name.match(/\.(mp3|wav|m4a|ogg)$/)
-      )
-    }
-  }
-
-  if (mode === "documental") {
-    return (
-      type === "application/pdf" ||
-      name.match(/\.(pdf|ppt|pptx|doc|docx)$/)
-    )
-  }
-
-  return false
   }
 
   function downloadGroup(taskId, files) {
@@ -1451,6 +1413,7 @@ export default function App() {
             className="h-10 w-auto"
           />
           <nav className="flex items-center gap-6 text-normal font-medium text-slate-700">
+            <a href="#" className="hover:text-slate-900 active">CREAR</a>
             <a href="#buscar" className="flex items-center gap-2 hover:opacity-80">
               BUSCAR
               <Search className="h-4 w-4" />
@@ -1578,8 +1541,12 @@ export default function App() {
               </div>
               <div className="flex flex-col lg:flex-row gap-2 md:gap-10 mt-6">
                 <div className="lg:w-1/2">
-                  <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
-                  <p className="text-sm">Aiuda te enviará una notificación cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.</p>
+                  {acceptedTerms && (
+                    <>
+                      <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
+                      <p className="text-sm">Aiuda te enviará una notificación cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.</p>
+                    </>
+                  )}
                 </div>
                 <div className="lg:w-1/2">
                   <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
@@ -2432,7 +2399,7 @@ export default function App() {
                           </div>
                         ) : null}
 
-                        <div className="hidden">
+                        <div className="rounded-xl border border-slate-200 bg-white p-4">
                           {selectedTaskCurrentJsonCacheKey &&
                           loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
                             <div className="flex items-center gap-2 text-sm text-slate-500">
