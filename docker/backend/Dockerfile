@@ -1,7 +1,13 @@
 FROM mambaorg/micromamba:1.5.10
 
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libreoffice-core \
+    libreoffice-impress \
+    fonts-dejavu \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 USER $MAMBA_USER
 
 WORKDIR /workspace
