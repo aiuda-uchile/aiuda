@@ -217,7 +217,7 @@ function getAcceptForForm(mode, mediaType) {
     if (mediaType === "video") return "video/*"
     return "audio/*"
   }
-  return ".pdf,.ppt,.pptx,.doc,.docx"
+  return ".pdf,.ppt,.pptx"
 }
 
 function buildPayload(form) {
@@ -961,6 +961,7 @@ export default function App() {
       formData.append("ocr", payload.ocr)
       formData.append("source_lang", payload.source_lang)
       formData.append("target_langs", payload.target_langs)
+      formData.append("ui_lang", lang)
 
       const response = await fetch("http://127.0.0.1:8000/api/tasks", {
         method: "POST",
@@ -1552,28 +1553,28 @@ export default function App() {
               <div className="features">
                   <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
-                        VIDEO / AUDIO
+                        {t("feature-1")}
                       </h4>
                   </div>
                   <div className="flex gap-6">
                     <div className="w-1/3 text center">
                         <Captions className="m-auto w-10 h-10"></Captions>
-                        <h4 className="text-center text-base">Subtítulos del video</h4>
+                        <h4 className="text-center text-base">{t("feature-2")}</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <ListMinus className="m-auto w-10 h-10"></ListMinus>
-                        <h4 className="text-center text-base">Versión en texto</h4>
+                        <h4 className="text-center text-base">{t("feature-3")}</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <Languages className="m-auto w-10 h-10"></Languages>
-                        <h4 className="text-center text-base">Traducción a otros idiomas</h4>
+                        <h4 className="text-center text-base">{t("feature-4")}</h4>
                     </div>
                   </div>
               </div>
               <div className="features ">
                   <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
-                         DOCUMENTOS
+                         {t("feature-title-2")}
                       </h4>
                       
                   </div>
@@ -1766,7 +1767,7 @@ export default function App() {
                           ? form.mediaType === "video"
                             ? "Formatos habituales: MP4, MOV, AVI, WMV, MKV y WebM"
                             : "Formatos habituales: MP3, WAV, M4A y OGG."
-                          : "Formatos habituales:.pdf,.ppt,.pptx,.doc,.docx"}
+                          : "Formatos habituales:.pdf,.ppt,.pptx"}
                       </p>
 
                       <div className="mt-2 ml-4 shrink-0 rounded-xl bg-color-primary px-3 py-2 text-sm font-medium text-white">
@@ -2448,7 +2449,7 @@ export default function App() {
                           </div>
                         ) : null}
 
-                        <div className="hidden">
+                        <div>
                           {selectedTaskCurrentJsonCacheKey &&
                           loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
                             <div className="flex items-center gap-2 text-sm text-slate-500">

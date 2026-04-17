@@ -6,80 +6,175 @@ export default function TermsPt({ onClose }) {
           max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         
         <h2 className="text-xl font-bold mb-4 px-10 pt-10">
-          Términos de Uso Aiuda Pt
+          Termos de Uso 
         </h2>
+        <h3 className="text-xl font-bold mb-2 px-10">Aiuda</h3>
+
         <div className="px-6 overflow-y-auto mx-auto wp-95">
           <p className="text-lg font-semibold mb-4">
-            Plataforma de apoyo a la inclusión para docentes universitarios
+            Plataforma de apoio à acessibilidade para docentes universitários
           </p>
+
           <p className="text-base">
-            Al descargar, instalar, acceder o utilizar cualquier funcionalidad de esta plataforma, usted (en adelante, "el Usuario") declara haber leído, comprendido y aceptado la totalidad de las cláusulas aquí expuestas.
+            Ao baixar, instalar, acessar ou utilizar qualquer funcionalidade desta plataforma, você (doravante, "Usuário/a") declara ter lido, compreendido e aceitado integralmente todas as cláusulas aqui expostas.
           </p>
+
           <h3 className="text-lg font-semibold mt-4">
-            Identificación
+            Identificação
           </h3>
+
           <p className="text-md mb-2">
-            ”aiuda” es un desarrollo nacido en torno a “labs universitarIA” organizados por SEGIB, Secretaría General Iberoamericana, organismo que organismo internacional de apoyo a los 22 países que conforman la comunidad iberoamericana.
+            <strong>Aiuda</strong> é um desenvolvimento criado no âmbito do <strong>Labs UniversitarIA</strong>, uma iniciativa de colaboração interuniversitária impulsionada pela Secretaria-Geral Ibero-Americana (SEGIB), organismo internacional de apoio aos 22 países que compõem a comunidade ibero-americana.
           </p>
+
           <p className="text-md mb-2">
-            Este laboratorio es Impulsado por la División de Innovación Pública y Ciudadana (DIPyC) de la SEGIB en alianza con cinco universidades públicas iberoamericanas: UBA, UFRJ, UChile, UDC y UTEC; de Argentina, Brasil, Chile, Coruña y Uruguay respectivamente. Persiguió el desarrollar soluciones de inteligencia artificial centradas en las personas con enfoque ético, inclusivo y contextualizado para enfrentar desafíos institucionales y sociales desde las universidades públicas, promoviendo soberanía tecnológica y fortalecimiento institucional. 
+            Este laboratório é impulsionado pela Divisão de Inovação Pública e Cidadã (DIPyC) da SEGIB em parceria com cinco universidades públicas ibero-americanas: Universidade da Corunha (UDC - Espanha), Universidade do Chile (UCHILE - Chile), Universidade Tecnológica do Uruguai (UTEC - Uruguai), Universidade de Buenos Aires (UBA - Argentina) e Universidade Federal do Rio de Janeiro (UFRJ - Brasil). O objetivo é desenvolver soluções de inteligência artificial centradas nas pessoas, com enfoque ético, inclusivo e contextualizado, para enfrentar desafios institucionais e sociais a partir das universidades públicas, promovendo soberania tecnológica e fortalecimento institucional.
           </p>
+
           <p className="text-md mb-2">
-            Este proyecto pretende ser una solución que cada universidad pueda instalar en su infraestructura, sin requerir servicios de terceros, entregando una “ayuda” a docentes, para el subtitulado, traducción y análisis de presentaciones, con miras a conseguir mejores condiciones de accesibilidad e inclusión en los entornos universitarios.
+            <strong>Aiuda</strong> pretende ser uma solução que cada universidade possa instalar em sua própria infraestrutura, sem necessidade de serviços de terceiros, oferecendo apoio a docentes para legendagem, tradução e/ou análise de apresentações, com o objetivo de melhorar as condições de acessibilidade nos ambientes universitários.
           </p>
+
           <p className="text-md mb-2">
-            El equipo de desarrollo estuvo formado, alfabéticamente,  por :
-              José Joaquim de Moura Ramos (UDC), Bruna de Vargas Guterres (UTEC), José Antonio dos Santos Borges (UFRJ), Lia Fernanda Izquierdo (UBA), Dario Riquelme Zornow (UCHILE), Alicia Gabriela Rosenthal (UBA), Fernando Javier Valladares (UBA); y en conjunto han acordado establecer un licenciamiento Creative Commons para esta solución.
+            A equipe de desenvolvimento foi formada, em ordem alfabética, por: José Joaquim de Moura Ramos (UDC), Bruna de Vargas Guterres (UTEC), José Antonio dos Santos Borges (UFRJ), Lia Fernanda Izquierdo (UBA), Dario Riquelme Zornow (UCHILE), Alicia Gabriela Rosenthal (UBA), Fernando Javier Valladares (UBA); e, em conjunto, acordaram estabelecer um licenciamento Creative Commons para esta solução.
           </p>
+
           <p className="text-md mb-2">
-            El punto de contacto respecto a este documento, es la División de Innovación Pública y Ciudadana (DIPyC) de la SEGIB, cuya sede está situada en: 
+            O ponto de contato em relação a este documento é a Divisão de Inovação Pública e Cidadã (DIPyC) da SEGIB, cuja sede está localizada em:
           </p>
+
           <p className="text-md mb-2">
               Paseo de Recoletos, 8 <br />
-              28001 Madrid, España <br />
-              Teléfono: (+34) 915 901 980 <br />
+              28001 Madrid, Espanha <br />
+              Telefone: (+34) 915 901 980 <br />
               info@segib.org
           </p>
+
           <h3 className="text-lg font-semibold mt-6">
-            Aceptación de las Reglas:
+            Aceitação das Regras:
           </h3>
+
           <p className="text-md mb-2">
-            El acceso a la Plataforma o cualquiera de sus componentes, está estrictamente condicionado a la aceptación sin reservas de estos términos. <strong> Si el Usuario no está de acuerdo con alguna de las condiciones, deberá abstenerse inmediatamente de utilizar los servicios.</strong> El uso continuo del sistema se interpretará como una aceptación tácita, voluntaria y definitiva de todas las reglas vigentes.
+            O acesso à Plataforma ou a qualquer de seus componentes está estritamente condicionado à aceitação integral destes termos. Caso o/a Usuário/a não concorde com alguma das condições, deverá abster-se imediatamente de utilizar os serviços. O uso contínuo do sistema será interpretado como aceitação tácita, voluntária e definitiva de todas as regras vigentes.
           </p>
+
           <h4 className="text-base mb-2 mt-2">
-            NATURALEZA DEL SERVICIO Y "ESTADO ACTUAL"
+            Natureza do serviço e “estado atual”
           </h4>
+
           <p className="text-md mb-2">
-            La Plataforma se entrega "tal cual" <strong>(AS IS) </strong> y "según disponibilidad" <strong>(AS AVAILABLE)</strong>. El SEGIB y el equipo de desarrollo, no garantiza que el servicio sea ininterrumpido, libre de errores, exacto o completamente seguro. El Usuario reconoce que el software es inherentemente susceptible a fallos técnicos y asume voluntariamente todos los riesgos asociados a su uso.
+            A Plataforma é fornecida "como está" (as is) e "conforme disponibilidade" (as available). Tanto a SEGIB quanto a equipe de desenvolvimento não garantem que o serviço será ininterrupto, livre de erros, preciso ou totalmente seguro. O/a Usuário/a reconhece que o software é inerentemente suscetível a falhas técnicas e assume voluntariamente todos os riscos associados ao seu uso.
           </p>
+
           <h4 className="text-base mb-2 mt-2">
-            RENUNCIA EXPLÍCITA A RECLAMACIONES POR DAÑOS
+            Renúncia explícita a reclamações por danos
           </h4>
+
           <p className="text-md mb-2">
-            Al aceptar estos términos, el Usuario renuncia de manera irrevocable, total y absoluta a ejercer cualquier derecho de reclamo, demanda o acción legal posterior contra el SEGIB, el equipo de desarrollo, sus afiliados o colaboradores, por concepto de:
+            Ao aceitar estes termos, o/a Usuário/a renuncia de forma irrevogável, total e absoluta a exercer qualquer direito de reclamação, demanda ou ação judicial posterior contra a SEGIB, a equipe de desenvolvimento, seus afiliados ou colaboradores, por:
           </p>
+
           <ul className="list text-md">
             <li>
-              <strong> Daños directos o indirectos: </strong> Incluyendo pérdida de datos, lucro cesante o interrupción de negocios.
+              Danos diretos ou indiretos: incluindo perda de dados, lucros cessantes ou interrupção de negócios.
             </li>
             <li>
-              <strong>Perjuicios morales o materiales:</strong> Derivados de fallos en el sistema, vulnerabilidades de seguridad o pérdida de información.
+              Danos morais ou materiais: decorrentes de falhas no sistema, vulnerabilidades de segurança ou perda de informações.
             </li>
             <li>
-              <p className="mb-4"><strong>Errores de terceros:</strong> Cualquier daño causado por servicios externos integrados en la Plataforma.</p>
+              <p className="mb-4">Erros de terceiros: qualquer dano causado por serviços externos integrados à Plataforma.</p>
               <p>
-                <strong>Nota Crítica:</strong> Bajo ninguna circunstancia el Desarrollador será responsable ante el Usuario por cualquier daño o perjuicio, incluso si se hubiera advertido previamente de la posibilidad de tales daños.
+                <strong>Nota Crítica:</strong> Em nenhuma circunstância o/a Desenvolvedor/a será responsável perante o/a Usuário/a por quaisquer danos ou prejuízos, mesmo que tenha sido previamente advertido da possibilidade de tais danos.
               </p>
             </li>
           </ul>
-          
+
+          <h3 className="text-lg font-semibold mt-4">
+            Indenização
+          </h3>
+
+          <p className="text-md mb-2">
+            O/a Usuário/a compromete-se a isentar a SEGIB, a equipe de desenvolvimento e seus colaboradores de qualquer reclamação de terceiros decorrente do uso da Plataforma ou do descumprimento destes termos.
+          </p>
+
+          <h3 className="text-lg font-semibold mt-4">
+            Propriedade Intelectual
+          </h3>
+
+          <p className="text-md mb-2">
+            A propriedade intelectual de <strong>Aiuda</strong> pertence aos sete membros da equipe de desenvolvimento, sendo uma obra colaborativa conforme descrito na seção “Identificação”.
+          </p>
+
+          <p className="text-md mb-2">
+            O licenciamento adotado para <strong>Aiuda</strong> é Creative Commons, o que mantém a propriedade intelectual do produto original com os autores já identificados.
+          </p>
+
+          <h3 className="text-lg font-semibold mt-4">
+            Uso Permitido e Proibido
+          </h3>
+
+          <p className="text-md mb-2">
+            <strong>Aiuda</strong> foi inicialmente concebida como uma ferramenta voltada à acessibilidade para docentes universitários dos países membros da SEGIB. No entanto, por ser uma ferramenta gratuita e de código aberto, pode ser adotada por outras instituições educacionais e similares.
+          </p>
+
+          <p className="text-md mb-2">
+            <strong>Aiuda</strong> utiliza licença Creative Commons e permite compartilhar e adaptar o código-fonte. “Compartilhar” permite copiar e redistribuir o material em qualquer meio ou formato. “Adaptar” permite modificar, transformar e criar novas soluções com base neste projeto.
+          </p>
+
+          <p className="text-md mb-2">
+            Esses usos estão sujeitos às seguintes condições:
+          </p>
+
+          <p className="text-md mb-2">
+            <strong>Atribuição (BY):</strong> Deve ser dado o devido crédito à equipe e à SEGIB, incluindo link da licença e indicação de alterações realizadas.
+          </p>
+
+          <p className="text-md mb-2">
+            <strong>Uso não comercial (NC):</strong> Não é permitido uso comercial do material.
+          </p>
+
+          <p className="text-md mb-2">
+            <strong>Compartilhar pela mesma licença (SA):</strong> Obras derivadas devem manter a mesma licença.
+          </p>
+
+          <p className="text-md mb-2">
+            É estritamente proibido o uso desta aplicação para criar obras com malware ou mecanismos de coleta de dados sensíveis.
+          </p>
+
+          <p className="text-md mb-2">
+            Também não é permitido distribuir ou armazenar conteúdo ilegal ou ofensivo.
+          </p>
+
+          <h3 className="text-lg font-semibold mt-4">
+            Cláusula de uso aceitável
+          </h3>
+
+          <p className="text-md mb-2">
+            Não é permitido utilizar a plataforma para promover conteúdos ilegais ou prejudiciais.
+          </p>
+
+          <h3 className="text-lg font-semibold mt-4">
+            Mudanças no licenciamento
+          </h3>
+
+          <p className="text-md mb-2">
+            A SEGIB reserva-se o direito de modificar os termos conforme evolução da ferramenta. O uso contínuo implica aceitação dos novos termos.
+          </p>
+
+          <img src="/aiuda/assets/by-nc-sa.png" alt="Licença Creative Commons" className="mt-2" width="150"/>
+
+          <p className="text-md mt-4 mb-2">
+            Elaborado por Darío Riquelme Z. <br />
+            Revisado por Ana Abac
+          </p>
         </div>
+
         <div className="flex justify-end p-6">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg bg-color-primary text-white"
           >
-            Cerrar
+            Fechar
           </button>
         </div>
       </div>
