@@ -55,6 +55,9 @@ import { header } from "framer-motion/client"
 import { useI18n } from "./i18n/i18n"
 import MetricCard from "./components/scripts/MetricCard"
 import Terms from "./components/scripts/Terms"
+import TermsEn from "./components/scripts/TermsEn"
+import TermsGl from "./components/scripts/TermsGl"
+import TermsPt from "./components/scripts/TermsPt"
 
 const BASE_URL = import.meta.env.BASE_URL || "/"
 
@@ -740,6 +743,19 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
+
+  function getTermsComponent(lang) {
+    switch (lang) {
+      case "en":
+        return <TermsEn onClose={() => setShowTerms(false)} />
+      case "pt":
+        return <TermsPt onClose={() => setShowTerms(false)} />
+      case "gl":
+        return <TermsGl onClose={() => setShowTerms(false)} />
+      default:
+        return <Terms onClose={() => setShowTerms(false)} />
+    }
+  }
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
@@ -1974,7 +1990,7 @@ export default function App() {
                   <Separator />
 
                 </form>
-                {showTerms && <Terms onClose={() => setShowTerms(false)} />}
+                {showTerms && getTermsComponent(lang)}
                 {uiError ? (
                   <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
                     {uiError}
@@ -1998,7 +2014,7 @@ export default function App() {
           
         </div>
         <article>
-          <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center" id="buscar">
+          <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center scroll-mt-20" id="buscar">
                 <div className="flex items-start gap-3">
                   <div>
                     <CardTitle className="text-lg text-color-primary py-1 px-4 font-bold text-lg">
