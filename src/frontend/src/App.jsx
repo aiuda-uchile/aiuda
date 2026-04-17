@@ -50,33 +50,30 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { div, header, p } from "framer-motion/client"
+import { header } from "framer-motion/client"
 
 import { useI18n } from "./i18n/i18n"
 import MetricCard from "./components/scripts/MetricCard"
 import Terms from "./components/scripts/Terms"
-import TermsEn from "./components/scripts/TermsEn"
-import TermsGl from "./components/scripts/TermsGl"
-import TermsPt from "./components/scripts/TermsPt"
+
 const BASE_URL = import.meta.env.BASE_URL || "/"
 
 function getPublicAssetUrl(path) {
   return `${BASE_URL}${String(path).replace(/^\/+/, "")}`
 }
 
-
 const TARGET_LANGS = [
-  { code: "es", label: "Español", icon: "🇪🇸" },
-  { code: "en", label: "Inglés", icon: "🇬🇧" },
-  { code: "pt", label: "Portugués", icon: "🇧🇷" },
+  { code: "es", label: "Espa帽ol", icon: "馃嚜馃嚫" },
+  { code: "en", label: "Ingl茅s", icon: "馃嚞馃嚙" },
+  { code: "pt", label: "Portugu茅s", icon: "馃嚙馃嚪" },
   { code: "gl", label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
 ]
 
 const LANGUAGE_META = {
-  original: { label: "Original", icon: "📄" },
-  es: { label: "Español", icon: "🇪🇸" },
-  en: { label: "Inglés", icon: "🇬🇧" },
-  pt: { label: "Portugués", icon: "🇧🇷" },
+  original: { label: "Original", icon: "馃搫" },
+  es: { label: "Espa帽ol", icon: "馃嚜馃嚫" },
+  en: { label: "Ingl茅s", icon: "馃嚞馃嚙" },
+  pt: { label: "Portugu茅s", icon: "馃嚙馃嚪" },
   gl: { label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
 }
 
@@ -115,11 +112,17 @@ function formatDate(value) {
   }
 }
 
-function getTaskTypeLabel(taskType) {
-  if (taskType === "audio") return "Audio"
-  if (taskType === "video") return "Video"
-  if (taskType === "documents") return "Documentos"
-  return taskType || "Tarea"
+function getTaskTypeLabel(taskType, t) {
+  if (!t) {
+    if (taskType === "audio") return "Audio"
+    if (taskType === "video") return "V铆deo"
+    if (taskType === "documents") return "Documentos"
+    return taskType || "Tarea"
+  }
+  if (taskType === "audio") return t("type-audio")
+  if (taskType === "video") return t("type-video")
+  if (taskType === "documents") return t("type-documents")
+  return taskType || t("type-task")
 }
 
 function getTaskIcon(taskType) {
@@ -127,6 +130,80 @@ function getTaskIcon(taskType) {
   if (taskType === "video") return Video
   if (taskType === "documents") return FileText
   return FileText
+}
+
+function getStatusConfig(status, t) {
+  switch (status) {
+    case "queued":
+      return {
+        label: t ? t("step-queued") : "En cola",
+        badge: "border-amber-200 bg-amber-50 text-amber-700",
+        bar: "bg-amber-500",
+        icon: Clock3,
+      }
+    case "processing":
+      return {
+        label: t ? t("task-processing") : "Procesando",
+        badge: "border-sky-200 bg-process text-white",
+        bar: "bg-process",
+        icon: Loader2,
+      }
+    case "finished":
+      return {
+        label: t ? t("step-ready") : "Finalizado",
+        badge: "border-primary3 bg-color-primary3 text-white text-sm h-7",
+        bar: "bg-color-primary3",
+        icon: CheckCircle2,
+      }
+    case "error":
+      return {
+        label: t ? t("task-with-error") : "Con error",
+        badge: "border-red-200 bg-error text-white",
+        bar: "bg-error",
+        icon: AlertTriangle,
+      }
+    default:
+      return {
+        label: status || (t ? t("step-queued") : "Desconocido"),
+        badge: "border-slate-200 bg-slate-50 text-slate-700",
+        bar: "bg-slate-500",
+        icon: Clock3,
+      }
+  }
+}
+
+function getMainDateByStatus(task) {
+  if (!task) {
+    return { label: "Fecha", value: null }
+  }
+
+  switch (task.status) {
+    case "finished":
+      return {
+        label: "Finalizada",
+        value: task.finished_at || task.updated_at,
+      }
+    case "processing":
+      return {
+        label: "Iniciada",
+        value: task.started_at || task.updated_at || task.created_at,
+      }
+    case "queued":
+      return {
+        label: "Recibida",
+        value: task.created_at,
+      }
+    case "error":
+      return {
+        label: "Error",
+        value: task.finished_at || task.updated_at || task.created_at,
+      }
+    default:
+      return {
+        label: "Fecha",
+        value: task.updated_at || task.created_at,
+      }
+  }
 }
 
 function getNotificationState(task) {
@@ -138,11 +215,19 @@ function getNotificationState(task) {
   return "disabled"
 }
 
+function getNotificationStateLabel(state, t) {
+  const map = { sent: "notif-sent", pending: "notif-pending", disabled: "notif-disabled", error: "notif-error" }
+  return t(map[state] || state)
+}
+
 function getAcceptForForm(mode, mediaType) {
   if (mode === "multimedia") {
-    if (mediaType === "video") return "video/*"
-    return "audio/*"
+    if (mediaType === "video") return ".mp4,.mov,.avi,.wmv,.mkv,.webm"
+    // Audio: .doc y .docx reservados para el futuro
+    return ".mp3,.wav,.m4a,.ogg"
   }
+  // Documentos: .doc y .docx comentados, listos para habilitar en el futuro
+  // return ".pdf,.ppt,.pptx,.doc,.docx"
   return ".pdf,.ppt,.pptx"
 }
 
@@ -182,10 +267,10 @@ function getJsonPreviewItems(outputs = []) {
     pt: "PT",
   }
   const icons = {
-    es: "🇪🇸",
-    en: "🇬🇧",
+    es: "馃嚜馃嚫",
+    en: "馃嚞馃嚙",
     gl: getPublicAssetUrl("galicia-icon.png"),
-    pt: "🇵🇹",
+    pt: "馃嚨馃嚬",
   }
 
   return outputs
@@ -228,7 +313,74 @@ function findSubtitledVideoOutput(outputs = [], key) {
   return outputs.find((filename) => regex.test(String(filename))) || null
 }
 
+function PipelineMini({ task, t }) {
+  const status = task?.status
+  const steps = [
+    { key: "uploaded", label: t("step-uploaded") },
+    { key: "queued", label: t("step-queued") },
+    { key: "engine", label: t("step-engine") },
+    { key: "ready", label: t("step-ready") },
+    { key: "notified", label: t("step-notified") },
+  ]
 
+  function stepActive(stepKey) {
+    if (!task) return false
+
+    if (stepKey === "uploaded") return true
+    if (stepKey === "queued")
+      return ["queued", "processing", "finished", "error"].includes(status)
+    if (stepKey === "engine")
+      return ["processing", "finished", "error"].includes(status)
+    if (stepKey === "ready") return ["finished"].includes(status)
+    if (stepKey === "notified") return getNotificationState(task) === "sent"
+
+    return false
+  }
+
+  const activeConnectorCount = Math.max(
+    0,
+    steps.filter((step) => stepActive(step.key)).length - 1,
+  )
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="relative pt-1">
+        <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 hidden h-1 rounded-full bg-slate-200 md:block" />
+        <div
+          className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-color-primary3 md:block"
+          style={{
+            width: `calc(80% * ${activeConnectorCount / Math.max(steps.length - 1, 1)
+              })`,
+          }}
+        />
+
+        <div className="grid grid-cols-5 gap-2">
+          {steps.map((step, idx) => {
+            const active = stepActive(step.key)
+            return (
+              <div
+                key={step.key}
+                className="flex flex-col items-center gap-2 text-center"
+              >
+                <div
+                  className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-base font-semibold ${active
+                      ? "border-primary3 bg-color-primary3 text-white"
+                      : "border-slate-300 bg-white"
+                    }`}
+                >
+                  {idx + 1}
+                </div>
+                <p className="text-center text-base leading-4 mt-2">
+                  {step.label}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
 function getColorClassByPercentage(value) {
   if (value < 40) return "bg-error"
   if (value <= 60) return "bg-process"
@@ -258,8 +410,8 @@ const DOCUMENT_CATEGORY_META = {
     description: "Uso del color y contraste",
   },
   small_fonts: {
-    label: "Tamaño de letra",
-    description: "Legibilidad tipográfica",
+    label: "Tama帽o de letra",
+    description: "Legibilidad tipogr谩fica",
   },
   long_texts: {
     label: "Textos largos",
@@ -277,7 +429,7 @@ function getDocumentScoreLabel(score) {
   if (score === null || score === undefined) return "Sin datos"
   if (score >= 90) return "Muy bien"
   if (score >= 75) return "Bien"
-  if (score >= 55) return "Atención"
+  if (score >= 55) return "Atenci贸n"
   return "Revisar"
 }
 
@@ -317,14 +469,14 @@ function clampDocumentStateIndex(index) {
 }
 
 function getDocumentStateIndex(label) {
-  const order = ["Revisar", "Atención", "Bien", "Muy bien"]
+  const order = ["Revisar", "Atenci贸n", "Bien", "Muy bien"]
   const idx = order.indexOf(label)
   return idx === -1 ? 0 : idx
 }
 
 function downgradeDocumentState(label, steps = 1) {
   if (!label || label === "Sin datos") return label
-  const order = ["Revisar", "Atención", "Bien", "Muy bien"]
+  const order = ["Revisar", "Atenci贸n", "Bien", "Muy bien"]
   const nextIndex = clampDocumentStateIndex(getDocumentStateIndex(label) - steps)
   return order[nextIndex]
 }
@@ -407,11 +559,11 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
       null
 
     if (issueCount > 0) {
-      const issueLabel = criticalCount > 0 ? "incid. crítica" : "incid."
-      const issueLabelPlural = criticalCount > 0 ? "incid. críticas" : "incid."
+      const issueLabel = criticalCount > 0 ? "incid. cr铆tica" : "incid."
+      const issueLabelPlural = criticalCount > 0 ? "incid. cr铆ticas" : "incid."
       if (hasMinCvdRatio && worstMode) {
         return {
-          detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} · ${worstMode}`,
+          detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} 路 Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} 路 ${worstMode}`,
           hasAttention: false,
           criticalCount,
           warningCount,
@@ -419,7 +571,7 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
       }
 
       return {
-        detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} · Revisar figuras dependientes del color`,
+        detail: `${issueCount} ${singularOrPlural(issueCount, issueLabel, issueLabelPlural)} 路 Revisar figuras dependientes del color`,
         hasAttention: false,
         criticalCount,
         warningCount,
@@ -429,9 +581,9 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
     if (hasAttention) {
       const detail = hasMinCvdRatio
         ? worstMode
-          ? `Sin incidencias críticas · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} · ${worstMode}`
-          : `Sin incidencias críticas · Peor score CVD: ${formatMetricValue(minCvdRatio, 2)}`
-        : "Sin incidencias críticas · 1 figura a vigilar"
+          ? `Sin incidencias cr铆ticas 路 Peor score CVD: ${formatMetricValue(minCvdRatio, 2)} 路 ${worstMode}`
+          : `Sin incidencias cr铆ticas 路 Peor score CVD: ${formatMetricValue(minCvdRatio, 2)}`
+        : "Sin incidencias cr铆ticas 路 1 figura a vigilar"
 
       return {
         detail,
@@ -456,8 +608,8 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
     if (issueCount > 0) {
       return {
         detail: pointSize
-          ? `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} · ejemplo detectado: ${pointSize} pt`
-          : `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} · revisar legibilidad tipográfica`,
+          ? `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} 路 ejemplo detectado: ${pointSize} pt`
+          : `${issueCount} ${singularOrPlural(issueCount, "incid.", "incid.")} 路 revisar legibilidad tipogr谩fica`,
         hasAttention: false,
         criticalCount,
         warningCount,
@@ -465,7 +617,7 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
     }
 
     return {
-      detail: "Sin alertas relevantes de tamaño",
+      detail: "Sin alertas relevantes de tama帽o",
       hasAttention: false,
       criticalCount,
       warningCount,
@@ -477,7 +629,7 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
 
     if (issueCount > 0) {
       return {
-        detail: `${issueCount} ${singularOrPlural(issueCount, "sección con exceso de texto", "secciones con exceso de texto")}`,
+        detail: `${issueCount} ${singularOrPlural(issueCount, "secci贸n con exceso de texto", "secciones con exceso de texto")}`,
         hasAttention: false,
         criticalCount,
         warningCount,
@@ -502,7 +654,7 @@ function buildDocumentCategoryDetail(key, matchedIssues, visualMetrics) {
 
 function buildGlobalDocumentSummary(categorySummaries) {
   if (!Array.isArray(categorySummaries) || categorySummaries.length === 0) {
-    return "Sin datos suficientes para resumir el análisis."
+    return "Sin datos suficientes para resumir el an谩lisis."
   }
 
   const issueCategory = [...categorySummaries]
@@ -518,7 +670,7 @@ function buildGlobalDocumentSummary(categorySummaries) {
     return "Documento correcto, con alguna figura a vigilar por color."
   }
 
-  return "Sin alertas visuales relevantes en esta revisión."
+  return "Sin alertas visuales relevantes en esta revisi贸n."
 }
 
 function buildDocumentCategorySummaries(preview) {
@@ -597,177 +749,14 @@ export default function App() {
   const logScrollRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
   const { t, lang,changeLanguage } = useI18n()
-  const languagesNav = ["es","pt","gl","en"]
+  const languagesNav = ["es","pt","gl"]
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
 
-  function PipelineMini({ task }) {
-    const status = task?.status
-    const steps = [
-      { key: "uploaded", label: t("step-uploaded") },
-      { key: "queued", label: t("step-queued")  },
-      { key: "engine", label: t("step-engine")  },
-      { key: "ready", label: t("step-ready")  },
-      { key: "notified", label: t("step-notified")  },
-    ]
-
-    function stepActive(stepKey) {
-      if (!task) return false
-
-      if (stepKey === "uploaded") return true
-      if (stepKey === "queued")
-        return ["queued", "processing", "finished", "error"].includes(status)
-      if (stepKey === "engine")
-        return ["processing", "finished", "error"].includes(status)
-      if (stepKey === "ready") return ["finished"].includes(status)
-      if (stepKey === "notified") return getNotificationState(task) === "sent"
-
-      return false
-    }
-
-    const activeConnectorCount = Math.max(
-      0,
-      steps.filter((step) => stepActive(step.key)).length - 1,
-    )
-
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <div className="relative pt-1">
-          <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 hidden h-1 rounded-full bg-slate-200 md:block" />
-          <div
-            className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-color-primary3 md:block"
-            style={{
-              width: `calc(80% * ${activeConnectorCount / Math.max(steps.length - 1, 1)
-                })`,
-            }}
-          />
-
-          <div className="grid grid-cols-5 gap-2">
-            {steps.map((step, idx) => {
-              const active = stepActive(step.key)
-              return (
-                <div
-                  key={step.key}
-                  className="flex flex-col items-center gap-2 text-center"
-                >
-                  <div
-                    className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-base font-semibold ${active
-                        ? "border-primary3 bg-color-primary3 text-white"
-                        : "border-slate-300 bg-white"
-                      }`}
-                  >
-                    {idx + 1}
-                  </div>
-                  <p className="text-center text-base leading-4 mt-2">
-                    {step.label}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    )
-  }
-  function getStatusConfig(status) {
-    switch (status) {
-      case "queued":
-        return {
-          label: t("step-queued"),
-          badge: "border-amber-200 bg-amber-50 text-amber-700",
-          bar: "bg-amber-500",
-          icon: Clock3,
-        }
-      case "processing":
-        return {
-          label: t("task-processing"),
-          badge: "border-sky-200 bg-process text-white",
-          bar: "bg-process",
-          icon: Loader2,
-        }
-      case "finished":
-        return {
-          label: t("task-finish"),
-          badge: "border-primary3 bg-color-primary3 text-white text-sm h-7",
-          bar: "bg-color-primary3",
-          icon: CheckCircle2,
-        }
-      case "error":
-        return {
-          label: t("task-with-error"),
-          badge: "border-red-200 bg-error text-white",
-          bar: "bg-error",
-          icon: AlertTriangle,
-        }
-      default:
-        return {
-          label: status || "Desconocido",
-          badge: "border-slate-200 bg-slate-50 text-slate-700",
-          bar: "bg-slate-500",
-          icon: Clock3,
-        }
-    }
-  }
-
-  function getMainDateByStatus(task) {
-    if (!task) {
-      return { label: "Fecha", value: null }
-    }
-
-    switch (task.status) {
-      case "finished":
-        return {
-          label: t("task-finish"),
-          value: task.finished_at || task.updated_at,
-        }
-      case "processing":
-        return {
-          label: t("task-started"),
-          value: task.started_at || task.updated_at || task.created_at,
-        }
-      case "queued":
-        return {
-          label: t("task-started"),
-          value: task.created_at,
-        }
-      case "error":
-        return {
-          label: t("task-status-error"),
-          value: task.finished_at || task.updated_at || task.created_at,
-        }
-      default:
-        return {
-          label: t("task-status-date"),
-          value: task.updated_at || task.created_at,
-        }
-    }
-  }
-
-  function getTermsComponent(lang) {
-    switch (lang) {
-      case "en":
-        return <TermsEn onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
-      case "pt":
-        return <TermsPt onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
-      case "gl":
-        return <TermsGl onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
-      default:
-        return <Terms onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl} />
-    }
-  }
   useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        setSuccess(false)
-      }, 4000)
-
-      return () => clearTimeout(timer)
-    }
-  }, [success])
-  useEffect(() => {
-    if (window.location.pathname === getPublicAssetUrl("/admin")) {
+    if (window.location.pathname === "/aiuda/admin") {
       setProfile("technical")
     }
   }, [])
@@ -785,7 +774,8 @@ export default function App() {
     }, 100)
     }
   }, [])
-
+  
+  
   function toggleProfile() {
     setProfile((prev) =>
       prev === "teacher" ? "technical" : "teacher"
@@ -795,7 +785,7 @@ export default function App() {
   async function fetchTasks(silent = false) {
     if (!silent) setLoadingTasks(true)
     try {
-      const response = await fetch("/aiuda/api/tasks")
+      const response = await fetch("/api/tasks")
       if (!response.ok) {
         throw new Error(`No se pudieron cargar las tareas (${response.status})`)
       }
@@ -910,19 +900,17 @@ export default function App() {
     setSuccess(false)
     //validar email
     if (!form.email.trim()) {
-      newErrors.email = t("email-error-1")
+      newErrors.email = "El email es obligatorio."
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(form.email)) {
-        newErrors.email = t("email-error-2")
+        newErrors.email = "Introduce un email v谩lido."
       }
     }
     if (!selectedFile) {
-      newErrors.file = t("file-error-1")
+      newErrors.file = "Debes subir un archivo."
     } else if (selectedFile.size === 0) {
-      newErrors.file = t("file-error-2")
-    } else if (!isValidFileType(selectedFile, form.mode, form.mediaType)) {
-      newErrors.file = t("file-error-3")
+      newErrors.file = "El archivo est谩 vac铆o."
     }
 
     if (form.options.translation && form.options.target_langs.length === 0) {
@@ -934,7 +922,7 @@ export default function App() {
       form.options.source_lang_mode === "manual" &&
       !form.options.source_lang.trim()
     ) {
-      setUiError("Indica el idioma origen o usa detección automática.")
+      setUiError("Indica el idioma origen o usa detecci贸n autom谩tica.")
       return
     }
     if (Object.keys(newErrors).length > 0) {
@@ -961,9 +949,8 @@ export default function App() {
       formData.append("ocr", payload.ocr)
       formData.append("source_lang", payload.source_lang)
       formData.append("target_langs", payload.target_langs)
-      formData.append("ui_lang", lang)
 
-      const response = await fetch("/aiuda/api/tasks", {
+      const response = await fetch("http://127.0.0.1:8000/api/tasks", {
         method: "POST",
         body: formData,
       })
@@ -972,7 +959,7 @@ export default function App() {
 
       if (!response.ok) {
         throw new Error(
-          data?.detail || `${t("backend-error")} (${response.status})`,
+          data?.detail || `Error creando tarea (${response.status})`,
         )
       }
 
@@ -982,60 +969,29 @@ export default function App() {
       setSelectedFile(null)
       setAcceptedTerms(false)
 
-      const fileInput = document.getElementById("aiuda-file-input")
+      const fileInput = document.getElementById("aluda-file-input")
       if (fileInput) fileInput.value = ""
 
       setSuccess(true)
     } catch (error) {
-      setUiError(error.message || t("backend-error"))
+      setUiError(error.message || "Error creando la tarea.")
       setErrors({ general: error.message })
-      /*Eliminar esto después*/
-        setSuccess(true)
-        setForm(INITIAL_FORM)
-        setSelectedFile(null)
-        setAcceptedTerms(false)
-      /*Hasta acá*/
+      /*Eliminar esto despu茅s*/
+      setSuccess(true)
+      setForm(INITIAL_FORM)
+      setSelectedFile(null)
+      setAcceptedTerms(false)
+      /*Hasta ac谩*/
     } finally {
       setSubmitting(false)
     }
-  }
-  function isValidFileType(file, mode, mediaType) {
-  if (!file) return false
-
-  const type = file.type
-  const name = file.name.toLowerCase()
-
-  if (mode === "multimedia") {
-    if (mediaType === "video") {
-      return (
-        type.startsWith("video/") ||
-        name.match(/\.(mp4|mov|avi|wmv|mkv|webm)$/)
-      )
-    }
-
-    if (mediaType === "audio") {
-      return (
-        type.startsWith("audio/") ||
-        name.match(/\.(mp3|wav|m4a|ogg)$/)
-      )
-    }
-  }
-
-  if (mode === "documental") {
-    return (
-      type === "application/pdf" ||
-      name.match(/\.(pdf|ppt|pptx)$/)
-    )
-  }
-
-  return false
   }
 
   function downloadGroup(taskId, files) {
     files.forEach((filename, index) => {
       window.setTimeout(() => {
         const link = document.createElement("a")
-        link.href = `/aiuda/api/tasks/${taskId}/download/${encodeURIComponent(
+        link.href = `/api/tasks/${taskId}/download/${encodeURIComponent(
           filename,
         )}`
         link.download = filename
@@ -1047,10 +1003,10 @@ export default function App() {
   }
 
   async function fetchLogText(taskId) {
-    const response = await fetch(`/aiuda/api/tasks/${taskId}/log`)
+    const response = await fetch(`/api/tasks/${taskId}/log`)
 
     if (!response.ok) {
-      throw new Error(`No se pudo cargar la información del procesamiento (${response.status})`)
+      throw new Error(`No se pudo cargar la informaci贸n del procesamiento (${response.status})`)
     }
 
     return await response.text()
@@ -1064,12 +1020,12 @@ export default function App() {
 
       setLogsByTask((prev) => ({
         ...prev,
-        [taskId]: logText || "Registro vacío.",
+        [taskId]: logText || "Registro vac铆o.",
       }))
     } catch (error) {
       setLogsByTask((prev) => ({
         ...prev,
-        [taskId]: `Error cargando la información del procesamiento: ${error.message || "desconocido"
+        [taskId]: `Error cargando la informaci贸n del procesamiento: ${error.message || "desconocido"
           }`,
       }))
     } finally {
@@ -1083,12 +1039,12 @@ export default function App() {
 
       setLogsByTask((prev) => ({
         ...prev,
-        [taskId]: logText || "Registro vacío.",
+        [taskId]: logText || "Registro vac铆o.",
       }))
     } catch (error) {
       setLogsByTask((prev) => ({
         ...prev,
-        [taskId]: `Error cargando la información del procesamiento: ${error.message || "desconocido"
+        [taskId]: `Error cargando la informaci贸n del procesamiento: ${error.message || "desconocido"
           }`,
       }))
     }
@@ -1104,25 +1060,25 @@ export default function App() {
       if (cachedLog === undefined) {
         setLogsByTask((prev) => ({
           ...prev,
-          [taskId]: logText || "Registro vacío.",
+          [taskId]: logText || "Registro vac铆o.",
         }))
       }
 
-      const blob = new Blob([logText || "Registro vacío."], {
+      const blob = new Blob([logText || "Registro vac铆o."], {
         type: "text/plain;charset=utf-8",
       })
 
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `aiuda-procesamiento-${taskId}.log`
+      link.download = `aluda-procesamiento-${taskId}.log`
       document.body.appendChild(link)
       link.click()
       link.remove()
       URL.revokeObjectURL(url)
     } catch (error) {
       setUiError(
-        error.message || "No se pudo descargar la información del procesamiento.",
+        error.message || "No se pudo descargar la informaci贸n del procesamiento.",
       )
     } finally {
       setLoadingLogId(null)
@@ -1149,7 +1105,7 @@ export default function App() {
       setLoadingJsonPreviewKey(cacheKey)
 
       const response = await fetch(
-        `/aiuda/api/tasks/${taskId}/download/${encodeURIComponent(filename)}`,
+        `/api/tasks/${taskId}/download/${encodeURIComponent(filename)}`,
       )
 
       if (!response.ok) {
@@ -1248,7 +1204,7 @@ export default function App() {
     !!selectedTask && !!showLogByTask[selectedTask.id]
 
   const selectedTaskStatus = selectedTask
-    ? getStatusConfig(selectedTask.status)
+    ? getStatusConfig(selectedTask.status, t)
     : null
 
   const selectedTaskMainDate = selectedTask
@@ -1467,12 +1423,7 @@ export default function App() {
             alt="Aiuda"
             className="h-10 w-auto"
           />
-          <nav className="flex items-center gap-6 text-normal font-medium text-slate-700">
-            <a href="#buscar" className="flex items-center gap-2 hover:opacity-80">
-              {t("nav-search")}
-              <Search className="h-4 w-4" />
-            </a>
-          </nav>
+
           
           <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white">
             {menuOpen ? <X /> : <Menu />}
@@ -1488,9 +1439,9 @@ export default function App() {
               </button>
             ))}
 
-            <button onClick={toggleProfile} className="flex items-center hidden">
+            <button onClick={toggleProfile} className="flex items-center">
               <UserCog className="h-5 w-5 mr-2" />
-              {profile === "teacher" ? "Docente" : "Técnico"}
+              {profile === "teacher" ? "Docente" : "T茅cnico"}
             </button>
           </nav>
           <nav
@@ -1522,7 +1473,7 @@ export default function App() {
               className="flex items-center"
             >
               <UserCog className="h-5 w-5 mr-2" />
-              {profile === "teacher" ? "Docente" : "Técnico"}
+              {profile === "teacher" ? "Docente" : "T茅cnico"}
             </button>
           </nav>
         </div>
@@ -1530,7 +1481,7 @@ export default function App() {
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-10 mb-8">
           <article className="md:w-1/2">
-            <div className="border-primary p-6 rounded-[2rem] intro">
+            <div className="border-primary p-6 rounded-[2rem]">
               <div className="max-w-3xl text-center">
                 <div className="mb-4 text-center">
                   <img
@@ -1551,9 +1502,9 @@ export default function App() {
                 <h4 className="mt-4 text-xl font-semibold color-primary">{t("intro-question")}</h4>
               </div>
               <div className="features">
-                  <div className="feature-title w-auto new-rounded py-2 mt-2 font-semibold color-primary inline-block">
+                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
-                        {t("feature-1")}
+                        {t("feature-title-1")}
                       </h4>
                   </div>
                   <div className="flex gap-6">
@@ -1572,9 +1523,9 @@ export default function App() {
                   </div>
               </div>
               <div className="features ">
-                  <div className="feature-title w-auto new-rounded py-2 mt-2 font-semibold color-primary inline-block">
+                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
-                         {t("feature-title-2")}
+                         {t("documents")}
                       </h4>
                       
                   </div>
@@ -1595,8 +1546,12 @@ export default function App() {
               </div>
               <div className="flex flex-col lg:flex-row gap-2 md:gap-10 mt-6">
                 <div className="lg:w-1/2">
-                  <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> {t("feature-email")}</h4>
-                  <p className="text-sm">{t("feature-text-email")}</p>
+                  {acceptedTerms && (
+                    <>
+                      <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> {t("feature-email")}</h4>
+                      <p className="text-sm">Aiuda te enviar谩 una notificaci贸n cuando el procesamiento haya finalizado, con el c贸digo necesario para localizar tu tarea.</p>
+                    </>
+                  )}
                 </div>
                 <div className="lg:w-1/2">
                   <h4 className="font-semibold mb-2">{t("feature-language")}</h4>
@@ -1605,25 +1560,25 @@ export default function App() {
                         <div className="lang">
                           ES
                         </div>
-                        <p className="text-sm">{t("es")}</p>
+                        <p className="text-sm">{t("lang-es")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           GL
                         </div>
-                        <p className="text-sm">{t("gl")}</p>
+                        <p className="text-sm">{t("lang-gl")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           PT
                         </div>
-                        <p className="text-sm">{t("pt")}</p>
+                        <p className="text-sm">{t("lang-pt")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           EN
                         </div>
-                        <p className="text-sm">{t("en")}</p>
+                        <p className="text-sm">{t("lang-en")}</p>
                     </div>
                   </div>
                 </div>
@@ -1716,18 +1671,18 @@ export default function App() {
 
                   {/*--INPUT FILE--*/}
                   <div className="space-y-2">
-                    <Label htmlFor="aiuda-file-input" className="hidden">Archivo:</Label>
+                    <Label htmlFor="aluda-file-input" className="hidden">Archivo:</Label>
 
                     <input
-                      id="aiuda-file-input"
+                      id="aluda-file-input"
                       type="file"
                       accept={getAcceptForForm(form.mode, form.mediaType)}
-                      onChange={(e) => { setSelectedFile(e.target.files?.[0] ?? null); setErrors({}) }}
+                      onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                       className="hidden"
                     />
 
                     <label
-                      htmlFor="aiuda-file-input"
+                      htmlFor="aluda-file-input"
                       onDragOver={(e) => {
                         e.preventDefault()
                         setIsDraggingFile(true)
@@ -1738,7 +1693,6 @@ export default function App() {
                         setIsDraggingFile(false)
                         const file = e.dataTransfer.files?.[0] ?? null
                         setSelectedFile(file)
-                        setErrors({})
                       }}
                       className={`border-file-input flex flex-col items-center cursor-pointer rounded-2xl border px-4 py-3 transition ${isDraggingFile
                           ? "border-sky-400 bg-sky-50"
@@ -1754,7 +1708,7 @@ export default function App() {
                           : <Presentation></Presentation>}
                         </div>
                         <p className="text-xl font-semibold text-center">
-                          {selectedFile ? selectedFile.name : "Seleccionar archivo"}
+                          {selectedFile ? selectedFile.name : t("select-file")}
                         </p>
                         <p className="text-base font-normal">
                           {selectedFile
@@ -1790,7 +1744,7 @@ export default function App() {
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder={t("place-holder-email")}
+                      placeholder={t("email-placeholder")}
                     />
                     {errors.email && (
                       <p className="text-sm text-red-600">{errors.email}</p>
@@ -1811,7 +1765,7 @@ export default function App() {
                                   <div className="pt-1">
                                     <p className="text-xs text-slate-500 mb-2">Idiomas para video subtitulado:</p>
                                     <div className="flex flex-wrap gap-2">
-                                      {[{ code: "original", label: "Original", icon: "🎬" }, ...TARGET_LANGS].map((lang) => {
+                                      {[{ code: "original", label: "Original", icon: "馃幀" }, ...TARGET_LANGS].map((lang) => {
                                         const active = (form.options.burn_langs || []).includes(lang.code)
                                         return (
                                           <button
@@ -1843,12 +1797,12 @@ export default function App() {
                               <div className="rounded-xl bg-white">
                                 <Label className="text-base">Formatos de salida</Label>
                                 <p className="text-xs text-slate-500 mb-2">
-                                  Seleccioná qué archivos generar para cada idioma.
+                                  Seleccion谩 qu茅 archivos generar para cada idioma.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {[
-                                    { id: "srt", label: "SRT (subtítulos)" },
-                                    { id: "vtt", label: "VTT (subtítulos web)" },
+                                    { id: "srt", label: "SRT (subt铆tulos)" },
+                                    { id: "vtt", label: "VTT (subt铆tulos web)" },
                                     { id: "txt", label: "TXT (texto plano)" },
                                     { id: "json", label: "JSON (datos)" },
                                   ].map(({ id, label }) => {
@@ -1920,7 +1874,7 @@ export default function App() {
                         <div className="space-y-3">
                           <Label className="text-base mb-0 mt-2">Idiomas para archivos</Label>
                           <p className="text-xs text-slate-500">
-                            Seleccioná en qué idiomas generar los archivos de subtítulos y texto.
+                            Seleccion谩 en qu茅 idiomas generar los archivos de subt铆tulos y texto.
                           </p>
                           <div className="flex flex-wrap gap-2">
                             {TARGET_LANGS.map((lang) => {
@@ -1965,7 +1919,7 @@ export default function App() {
                     />
 
                     <label htmlFor="terms" className="text-sm text-slate-700">
-                      {t("text-acepts")}{" "}
+                      {t("text-acepts")}
                       <button
                         type="button"
                         onClick={() => setShowTerms(true)}
@@ -1991,7 +1945,7 @@ export default function App() {
                   <Separator />
 
                 </form>
-                {showTerms && getTermsComponent(lang)}
+                {showTerms && <Terms onClose={() => setShowTerms(false)} />}
                 {uiError ? (
                   <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
                     {uiError}
@@ -2015,7 +1969,7 @@ export default function App() {
           
         </div>
         <article>
-          <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center scroll-mt-20" id="buscar">
+          <div className="flex flex-col md:flex-row md:space-y-0 space-y-4 justify-between items-center" id="buscar">
                 <div className="flex items-start gap-3">
                   <div>
                     <CardTitle className="text-lg text-color-primary py-1 px-4 font-bold text-lg">
@@ -2026,7 +1980,7 @@ export default function App() {
                 {profile === "technical" && (
                   <div className="flex gap-2 justify-end">
                     {[
-                      { key: "all", label: t("task-all") },
+                      { key: "all", label: "Todas" },
                       { key: "active", label: t("task-active") },
                       { key: "finished", label: t("task-finished") },
                       { key: "error", label: t("task-error") },
@@ -2052,7 +2006,7 @@ export default function App() {
               className="h-11 rounded-xl border-slate-300 bg-white"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Ingresá el código que recibiste por correo electrónico"
+              placeholder={t("search-placeholder")}
             />
             <p className="text-xs mb-2">
               {t("search-text")}
@@ -2061,8 +2015,8 @@ export default function App() {
         </article>
         {profile === "technical" && (
           <article>
-            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-5">
-              <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
+            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
+              <MetricCard title={t("step-queued")} value={counts.queued} icon={Clock3} tone="amber" />
               <MetricCard
                 title={t("task-processing")}
                 value={counts.processing}
@@ -2100,20 +2054,20 @@ export default function App() {
                   </div>
                   <p className="text-sm font-medium text-slate-700">
                     {searchId.trim()
-                      ? t("error-1")
-                      : t("error-2")}
+                      ? "No se encontr贸 ning煤n trabajo con ese ID."
+                      : "No hay tareas para este filtro."}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
                     {searchId.trim()
-                      ? t("error-3")
-                      : t("error-4")}
+                      ? "Revisa el ID o cambia el filtro seleccionado."
+                      : "Cuando env铆es trabajos aparecer谩n aqu铆 con su progreso."}
                   </p>
                 </div>
               ) : (
                 <>
                   <div className="space-y-3">
                     {paginatedTasks.map((task) => {
-                      const status = getStatusConfig(task.status)
+                      const status = getStatusConfig(task.status, t)
                       const Icon = getTaskIcon(task.task_type)
                       const StatusIcon = status.icon
                       const isSelected = task.id === selectedTaskId
@@ -2141,7 +2095,7 @@ export default function App() {
                               variant="outline"
                               className="rounded-full px-2.5 py-0.5"
                             >
-                              {getTaskTypeLabel(task.task_type)}
+                              {getTaskTypeLabel(task.task_type, t)}
                             </Badge>
                           </div>
 
@@ -2162,7 +2116,7 @@ export default function App() {
 
                           <div className="mt-4">
                             <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                              <span>{t("text-progress")}</span>
+                              <span>{t("progress")}</span>
                               <span>{task.progress ?? 0}%</span>
                             </div>
 
@@ -2183,9 +2137,9 @@ export default function App() {
                             <div className="flex min-w-0 items-center gap-2">
                               <Mail className="h-4 w-4 shrink-0" />
                               <span className="truncate">
-                                {t("notification")}{" "}
+                                {t("notification")}
                                 <span className="font-medium text-slate-700">
-                                  {getNotificationState(task)}
+                                  {getNotificationStateLabel(getNotificationState(task), t)}
                                 </span>
                               </span>
                             </div>
@@ -2250,7 +2204,7 @@ export default function App() {
                         {selectedTaskStatus.label}
                       </Badge>
                       <Badge variant="outline" className="rounded-full px-3 py-1">
-                        {getTaskTypeLabel(selectedTask.task_type)}
+                        {getTaskTypeLabel(selectedTask.task_type, t)}
                       </Badge>
                     </div>
                   )}
@@ -2271,7 +2225,7 @@ export default function App() {
                     
 
                     <h3 className="text-lg font-semibold">
-                      {selectedTask.resource || t("code")} : {selectedTask.id}
+                      {selectedTask.resource || t("task-code")} : {selectedTask.id}
                     </h3>
 
                     <div className="mt-2 grid gap-2 text-normal">
@@ -2288,21 +2242,21 @@ export default function App() {
                         {selectedTask.email || "-"}
                       </div>
                       <div className="rounded-xl bg-slate-50 hidden">
-                        <span className="font-medium">{t("notification")}:</span>{" "}
-                        {getNotificationState(selectedTask)}
+                        <span className="font-medium">{t("notification")}</span>{" "}
+                        {getNotificationStateLabel(getNotificationState(selectedTask), t)}
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <PipelineMini task={selectedTask} />
+                    <PipelineMini task={selectedTask} t={t} />
                   </div>
                   {selectedTask.notes ? (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <div className="mb-2 flex items-center gap-2">
                         <FileText className="h-4 w-4" />
                         <p className="text-base font-semibold">
-                          Observaciones:
+                          {t("notes")}
                         </p>
                       </div>
 
@@ -2326,20 +2280,20 @@ export default function App() {
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <video
                           controls
-                          className="w-full rounded-xl bg-black video-container"
-                          src={`/aiuda/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          className="w-full rounded-xl bg-black"
+                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskCurrentVideoFile,
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
-                          {t("error-6")}
+                          Tu navegador no soporta reproducci贸n de video.
                         </video>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
-                          <p className="text-sm text-slate-500">
+                          <p className="text-xs text-slate-500">
                             {selectedTaskCurrentJsonFile
-                              ? `${t("subtitle-show")} ${selectedTaskCurrentDownloadMeta.label}.`
-                              : "Vídeo con subtítulos incrustados."}
+                              ? `${t("title-transcription")} - ${selectedTaskCurrentDownloadMeta.label}`
+                              : t("video-embedded")}
                           </p>
 
                           <Button
@@ -2367,12 +2321,12 @@ export default function App() {
                           ref={audioPlayerRef}
                           controls
                           className="w-full"
-                          src={`/aiuda/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskAudioFile,
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
-                          {t("error-7")}
+                          Tu navegador no soporta reproducci贸n de audio.
                         </audio>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
@@ -2449,7 +2403,7 @@ export default function App() {
                           </div>
                         ) : null}
 
-                        <div>
+                        <div className="rounded-xl border border-slate-200 bg-white p-4">
                           {selectedTaskCurrentJsonCacheKey &&
                           loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
                             <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -2503,7 +2457,7 @@ export default function App() {
                             </div>
                           ) : (
                             <div className="text-sm text-slate-500">
-                              {t("error-8")}
+                              No hay segmentos disponibles para esta vista.
                             </div>
                           )}
                         </div>
@@ -2523,11 +2477,11 @@ export default function App() {
                             <span>
                               {selectedTaskIsDocument
                                 ? selectedTaskCurrentJsonFile?.key === "original"
-                                  ? t("downloads-avaible")
+                                  ? t("downloads-available")
                                   : `${t("downloads-in")} ${selectedTaskCurrentDownloadMeta.label}`
                                 : selectedTaskCurrentJsonFile?.key === "original"
-                                ? t("downloads-avaible")
-                                : `${t("downloads-in")}  ${selectedTaskCurrentDownloadMeta.label}`}
+                                ? t("downloads-available")
+                                : `${t("downloads-in")} ${selectedTaskCurrentDownloadMeta.label}`}
                             </span>
                           </div>
 
@@ -2543,7 +2497,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                  {t("download-original")} 
+                                  {t("download-original")}
                                 </Button>
                               ) : null}
 
@@ -2557,7 +2511,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                   {t("download-report")} 
+                                   {t("download-report")}
                                 </Button>
                               ) : null}
                             </div>
@@ -2573,7 +2527,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                   {t("text")} 
+                                  Texto
                                 </Button>
                               ) : null}
 
@@ -2652,10 +2606,10 @@ export default function App() {
                   <div>
                     <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
                       <Cpu className="h-6 w-6 mr-2" />
-                        {t("technical-information")} 
+                        Informaci贸n del procesamiento
                     </CardTitle>
                     <CardDescription className="mt-1 text-slate-600">
-                      {t("technical-text")}
+                      Seguimiento t茅cnico y registro de ejecuci贸n de la tarea seleccionada.
                     </CardDescription>
                   </div>
                 </div>
@@ -2688,7 +2642,7 @@ export default function App() {
                             className="h-10 w-10 rounded-xl p-0"
                             onClick={() => downloadLog(selectedTask.id)}
                             disabled={loadingLogId === selectedTask.id}
-                            aria-label={t("download-info")}
+                            aria-label="Descargar informaci贸n del procesamiento"
                             title={t("download-info")}
                           >
                             {loadingLogId === selectedTask.id ? (
@@ -2706,7 +2660,7 @@ export default function App() {
                           onClick={() => toggleLog(selectedTask.id)}
                           disabled={loadingLogId === selectedTask.id}
                         >
-                          {showLogByTask[selectedTask.id] ? t("show") : t("hide")}
+                          {showLogByTask[selectedTask.id] ? t("hide") : t("show")}
                         </Button>
                       </div>
                     </div>
@@ -2718,7 +2672,7 @@ export default function App() {
                             className="max-h-[260px] overflow-auto rounded-xl"
                           >
                             <pre className="whitespace-pre-wrap break-words text-xs leading-6 text-slate-100">
-                              {logsByTask[selectedTask.id] || t("error-10")}
+                              {logsByTask[selectedTask.id] || "Registro vac铆o."}
                             </pre>
                           </div>
                         </div>
