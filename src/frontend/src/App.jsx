@@ -597,7 +597,7 @@ export default function App() {
   const logScrollRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
   const { t, lang,changeLanguage } = useI18n()
-  const languagesNav = ["es","pt","gl"]
+  const languagesNav = ["es","pt","gl","en"]
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
