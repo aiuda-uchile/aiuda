@@ -58,12 +58,12 @@ import Terms from "./components/scripts/Terms"
 import TermsEn from "./components/scripts/TermsEn"
 import TermsGl from "./components/scripts/TermsGl"
 import TermsPt from "./components/scripts/TermsPt"
-
 const BASE_URL = import.meta.env.BASE_URL || "/"
 
 function getPublicAssetUrl(path) {
   return `${BASE_URL}${String(path).replace(/^\/+/, "")}`
 }
+
 
 const TARGET_LANGS = [
   { code: "es", label: "Español", icon: "🇪🇸" },
@@ -127,80 +127,6 @@ function getTaskIcon(taskType) {
   if (taskType === "video") return Video
   if (taskType === "documents") return FileText
   return FileText
-}
-
-function getStatusConfig(status) {
-  switch (status) {
-    case "queued":
-      return {
-        label: "En cola",
-        badge: "border-amber-200 bg-amber-50 text-amber-700",
-        bar: "bg-amber-500",
-        icon: Clock3,
-      }
-    case "processing":
-      return {
-        label: "Procesando",
-        badge: "border-sky-200 bg-process text-white",
-        bar: "bg-process",
-        icon: Loader2,
-      }
-    case "finished":
-      return {
-        label: "Finalizada",
-        badge: "border-primary3 bg-color-primary3 text-white text-sm h-7",
-        bar: "bg-color-primary3",
-        icon: CheckCircle2,
-      }
-    case "error":
-      return {
-        label: "Con error",
-        badge: "border-red-200 bg-error text-white",
-        bar: "bg-error",
-        icon: AlertTriangle,
-      }
-    default:
-      return {
-        label: status || "Desconocido",
-        badge: "border-slate-200 bg-slate-50 text-slate-700",
-        bar: "bg-slate-500",
-        icon: Clock3,
-      }
-  }
-}
-
-function getMainDateByStatus(task) {
-  if (!task) {
-    return { label: "Fecha", value: null }
-  }
-
-  switch (task.status) {
-    case "finished":
-      return {
-        label: "Finalizada",
-        value: task.finished_at || task.updated_at,
-      }
-    case "processing":
-      return {
-        label: "Iniciada",
-        value: task.started_at || task.updated_at || task.created_at,
-      }
-    case "queued":
-      return {
-        label: "Recibida",
-        value: task.created_at,
-      }
-    case "error":
-      return {
-        label: "Error",
-        value: task.finished_at || task.updated_at || task.created_at,
-      }
-    default:
-      return {
-        label: "Fecha",
-        value: task.updated_at || task.created_at,
-      }
-  }
 }
 
 function getNotificationState(task) {
@@ -302,74 +228,7 @@ function findSubtitledVideoOutput(outputs = [], key) {
   return outputs.find((filename) => regex.test(String(filename))) || null
 }
 
-function PipelineMini({ task }) {
-  const status = task?.status
-  const steps = [
-    { key: "uploaded", label: "Enviado" },
-    { key: "queued", label: "En cola" },
-    { key: "engine", label: "En proceso" },
-    { key: "ready", label: "Finalizado" },
-    { key: "notified", label: "Notificado" },
-  ]
 
-  function stepActive(stepKey) {
-    if (!task) return false
-
-    if (stepKey === "uploaded") return true
-    if (stepKey === "queued")
-      return ["queued", "processing", "finished", "error"].includes(status)
-    if (stepKey === "engine")
-      return ["processing", "finished", "error"].includes(status)
-    if (stepKey === "ready") return ["finished"].includes(status)
-    if (stepKey === "notified") return getNotificationState(task) === "sent"
-
-    return false
-  }
-
-  const activeConnectorCount = Math.max(
-    0,
-    steps.filter((step) => stepActive(step.key)).length - 1,
-  )
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="relative pt-1">
-        <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 hidden h-1 rounded-full bg-slate-200 md:block" />
-        <div
-          className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-color-primary3 md:block"
-          style={{
-            width: `calc(80% * ${activeConnectorCount / Math.max(steps.length - 1, 1)
-              })`,
-          }}
-        />
-
-        <div className="grid grid-cols-5 gap-2">
-          {steps.map((step, idx) => {
-            const active = stepActive(step.key)
-            return (
-              <div
-                key={step.key}
-                className="flex flex-col items-center gap-2 text-center"
-              >
-                <div
-                  className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-base font-semibold ${active
-                      ? "border-primary3 bg-color-primary3 text-white"
-                      : "border-slate-300 bg-white"
-                    }`}
-                >
-                  {idx + 1}
-                </div>
-                <p className="text-center text-base leading-4 mt-2">
-                  {step.label}
-                </p>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-}
 function getColorClassByPercentage(value) {
   if (value < 40) return "bg-error"
   if (value <= 60) return "bg-process"
@@ -744,16 +603,158 @@ export default function App() {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
 
+  function PipelineMini({ task }) {
+    const status = task?.status
+    const steps = [
+      { key: "uploaded", label: t("step-uploaded") },
+      { key: "queued", label: t("step-queued")  },
+      { key: "engine", label: t("step-engine")  },
+      { key: "ready", label: t("step-ready")  },
+      { key: "notified", label: t("step-notified")  },
+    ]
+
+    function stepActive(stepKey) {
+      if (!task) return false
+
+      if (stepKey === "uploaded") return true
+      if (stepKey === "queued")
+        return ["queued", "processing", "finished", "error"].includes(status)
+      if (stepKey === "engine")
+        return ["processing", "finished", "error"].includes(status)
+      if (stepKey === "ready") return ["finished"].includes(status)
+      if (stepKey === "notified") return getNotificationState(task) === "sent"
+
+      return false
+    }
+
+    const activeConnectorCount = Math.max(
+      0,
+      steps.filter((step) => stepActive(step.key)).length - 1,
+    )
+
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="relative pt-1">
+          <div className="pointer-events-none absolute left-[10%] right-[10%] top-5 hidden h-1 rounded-full bg-slate-200 md:block" />
+          <div
+            className="pointer-events-none absolute left-[10%] top-5 hidden h-1 rounded-full bg-color-primary3 md:block"
+            style={{
+              width: `calc(80% * ${activeConnectorCount / Math.max(steps.length - 1, 1)
+                })`,
+            }}
+          />
+
+          <div className="grid grid-cols-5 gap-2">
+            {steps.map((step, idx) => {
+              const active = stepActive(step.key)
+              return (
+                <div
+                  key={step.key}
+                  className="flex flex-col items-center gap-2 text-center"
+                >
+                  <div
+                    className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border text-base font-semibold ${active
+                        ? "border-primary3 bg-color-primary3 text-white"
+                        : "border-slate-300 bg-white"
+                      }`}
+                  >
+                    {idx + 1}
+                  </div>
+                  <p className="text-center text-base leading-4 mt-2">
+                    {step.label}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )
+  }
+  function getStatusConfig(status) {
+    switch (status) {
+      case "queued":
+        return {
+          label: t("step-queued"),
+          badge: "border-amber-200 bg-amber-50 text-amber-700",
+          bar: "bg-amber-500",
+          icon: Clock3,
+        }
+      case "processing":
+        return {
+          label: t("task-processing"),
+          badge: "border-sky-200 bg-process text-white",
+          bar: "bg-process",
+          icon: Loader2,
+        }
+      case "finished":
+        return {
+          label: t("task-finish"),
+          badge: "border-primary3 bg-color-primary3 text-white text-sm h-7",
+          bar: "bg-color-primary3",
+          icon: CheckCircle2,
+        }
+      case "error":
+        return {
+          label: t("task-with-error"),
+          badge: "border-red-200 bg-error text-white",
+          bar: "bg-error",
+          icon: AlertTriangle,
+        }
+      default:
+        return {
+          label: status || "Desconocido",
+          badge: "border-slate-200 bg-slate-50 text-slate-700",
+          bar: "bg-slate-500",
+          icon: Clock3,
+        }
+    }
+  }
+
+  function getMainDateByStatus(task) {
+    if (!task) {
+      return { label: "Fecha", value: null }
+    }
+
+    switch (task.status) {
+      case "finished":
+        return {
+          label: t("task-finish"),
+          value: task.finished_at || task.updated_at,
+        }
+      case "processing":
+        return {
+          label: t("task-started"),
+          value: task.started_at || task.updated_at || task.created_at,
+        }
+      case "queued":
+        return {
+          label: t("task-started"),
+          value: task.created_at,
+        }
+      case "error":
+        return {
+          label: t("task-status-error"),
+          value: task.finished_at || task.updated_at || task.created_at,
+        }
+      default:
+        return {
+          label: t("task-status-date"),
+          value: task.updated_at || task.created_at,
+        }
+    }
+  }
+
   function getTermsComponent(lang) {
     switch (lang) {
       case "en":
-        return <TermsEn onClose={() => setShowTerms(false)} />
+        return <TermsEn onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
       case "pt":
-        return <TermsPt onClose={() => setShowTerms(false)} />
+        return <TermsPt onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
       case "gl":
-        return <TermsGl onClose={() => setShowTerms(false)} />
+        return <TermsGl onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl}/>
       default:
-        return <Terms onClose={() => setShowTerms(false)} />
+        return <Terms onClose={() => setShowTerms(false)} getPublicAssetUrl={getPublicAssetUrl} />
     }
   }
   useEffect(() => {
@@ -766,7 +767,7 @@ export default function App() {
     }
   }, [success])
   useEffect(() => {
-    if (window.location.pathname === "/aiuda/admin") {
+    if (window.location.pathname === getPublicAssetUrl("/admin")) {
       setProfile("technical")
     }
   }, [])
@@ -910,19 +911,19 @@ export default function App() {
     setSuccess(false)
     //validar email
     if (!form.email.trim()) {
-      newErrors.email = "El email es obligatorio."
+      newErrors.email = t("email-error-1")
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(form.email)) {
-        newErrors.email = "Introduce un email válido."
+        newErrors.email = t("email-error-2")
       }
     }
     if (!selectedFile) {
-      newErrors.file = "Debes subir un archivo."
+      newErrors.file = t("file-error-1")
     } else if (selectedFile.size === 0) {
-      newErrors.file = "El archivo está vacío."
+      newErrors.file = t("file-error-2")
     } else if (!isValidFileType(selectedFile, form.mode, form.mediaType)) {
-      newErrors.file = "El tipo de archivo no coincide con la opción seleccionada."
+      newErrors.file = t("file-error-3")
     }
 
     if (form.options.translation && form.options.target_langs.length === 0) {
@@ -972,7 +973,7 @@ export default function App() {
 
       if (!response.ok) {
         throw new Error(
-          data?.detail || `Error creando tarea (${response.status})`,
+          data?.detail || `${t("backend-error")} (${response.status})`,
         )
       }
 
@@ -987,7 +988,7 @@ export default function App() {
 
       setSuccess(true)
     } catch (error) {
-      setUiError(error.message || "Error creando la tarea.")
+      setUiError(error.message || t("backend-error"))
       setErrors({ general: error.message })
       /*Eliminar esto después*/
         setSuccess(true)
@@ -1024,7 +1025,7 @@ export default function App() {
   if (mode === "documental") {
     return (
       type === "application/pdf" ||
-      name.match(/\.(pdf|ppt|pptx|doc|docx)$/)
+      name.match(/\.(pdf|ppt|pptx)$/)
     )
   }
 
@@ -1469,7 +1470,7 @@ export default function App() {
           />
           <nav className="flex items-center gap-6 text-normal font-medium text-slate-700">
             <a href="#buscar" className="flex items-center gap-2 hover:opacity-80">
-              BUSCAR
+              {t("nav-search")}
               <Search className="h-4 w-4" />
             </a>
           </nav>
@@ -1488,7 +1489,7 @@ export default function App() {
               </button>
             ))}
 
-            <button onClick={toggleProfile} className="flex items-center">
+            <button onClick={toggleProfile} className="flex items-center hidden">
               <UserCog className="h-5 w-5 mr-2" />
               {profile === "teacher" ? "Docente" : "Técnico"}
             </button>
@@ -1530,7 +1531,7 @@ export default function App() {
       <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-10 mb-8">
           <article className="md:w-1/2">
-            <div className="border-primary p-6 rounded-[2rem]">
+            <div className="border-primary p-6 rounded-[2rem] intro">
               <div className="max-w-3xl text-center">
                 <div className="mb-4 text-center">
                   <img
@@ -1551,7 +1552,7 @@ export default function App() {
                 <h4 className="mt-4 text-xl font-semibold color-primary">{t("intro-question")}</h4>
               </div>
               <div className="features">
-                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
+                  <div className="feature-title w-auto new-rounded py-2 mt-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
                         {t("feature-1")}
                       </h4>
@@ -1572,7 +1573,7 @@ export default function App() {
                   </div>
               </div>
               <div className="features ">
-                  <div className="feature-title w-auto new-rounded py-2 mt-4 mb-2 font-semibold color-primary inline-block">
+                  <div className="feature-title w-auto new-rounded py-2 mt-2 font-semibold color-primary inline-block">
                       <h4 className="flex align-items-center text-lg font-semibold">
                          {t("feature-title-2")}
                       </h4>
@@ -1581,49 +1582,49 @@ export default function App() {
                   <div className="flex gap-6">
                     <div className="w-1/3 text center">
                         <PersonStanding className="m-auto w-10 h-10"></PersonStanding>
-                        <h4 className="text-center text-base">Evaluación de Accesibilidad</h4>
+                        <h4 className="text-center text-base">{t("feature-5")}</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <PaintBucket className="m-auto w-10 h-10"></PaintBucket>
-                        <h4 className="text-center text-base">Baja Visión / Color</h4>
+                        <h4 className="text-center text-base">{t("feature-6")}</h4>
                     </div>
                     <div className="w-1/3 text center">
                         <CaseSensitive className="m-auto w-10 h-10"></CaseSensitive>
-                        <h4 className="text-center text-base">Tamaño de letra</h4>
+                        <h4 className="text-center text-base">{t("feature-7")}</h4>
                     </div>
                   </div>
               </div>
               <div className="flex flex-col lg:flex-row gap-2 md:gap-10 mt-6">
                 <div className="lg:w-1/2">
-                  <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> Aviso por correo:</h4>
-                  <p className="text-sm">Aiuda te enviará una notificación cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.</p>
+                  <h4 className="font-semibold flex mb-2"><Mail className="mr-2"></Mail> {t("feature-email")}</h4>
+                  <p className="text-sm">{t("feature-text-email")}</p>
                 </div>
                 <div className="lg:w-1/2">
-                  <h4 className="font-semibold mb-2">Idiomas disponibles:</h4>
+                  <h4 className="font-semibold mb-2">{t("feature-language")}</h4>
                   <div className="flex gap-2">
                     <div className="text-center">
                         <div className="lang">
                           ES
                         </div>
-                        <p className="text-sm">Español</p>
+                        <p className="text-sm">{t("es")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           GL
                         </div>
-                        <p className="text-sm">Gallego</p>
+                        <p className="text-sm">{t("gl")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           PT
                         </div>
-                        <p className="text-sm">Portugués</p>
+                        <p className="text-sm">{t("pt")}</p>
                     </div>
                     <div className="text-center">
                         <div className="lang">
                           EN
                         </div>
-                        <p className="text-sm">Inglés</p>
+                        <p className="text-sm">{t("en")}</p>
                     </div>
                   </div>
                 </div>
@@ -1637,7 +1638,7 @@ export default function App() {
                 <div className="flex items-start gap-3">
                   <div>
                     <CardTitle className="text-lg text-slate-950 items-center flex text-white new-rounded text-color-primary font-bold px-2">
-                      NUEVA TAREA
+                      {t("new-task")}
                     </CardTitle>
                   </div>
                 </div>
@@ -1658,7 +1659,7 @@ export default function App() {
                         <div className="flex items-center gap-2">
                           <CirclePlay className="h-6 w-6" />
                           <span className="text-lg font-semibold">
-                            MULTIMEDIA
+                            {t("multimedia")}
                           </span>
                         </div>
                       </button>
@@ -1675,7 +1676,7 @@ export default function App() {
                           <Presentation className="h-5 w-5" />
                           <FileText className="h-5 w-5" />
                           <span className="text-lg font-semibold">
-                            DOCUMENTOS
+                            {t("documents")}
                           </span>
                         </div>
                       </button>
@@ -1694,7 +1695,7 @@ export default function App() {
                           }`}
                         >
                           <Video></Video>
-                          VIDEO
+                          {t("video")}
                         </button>
                         <button
                           type="button"
@@ -1706,7 +1707,7 @@ export default function App() {
                           }`}
                         >
                           <Volume2></Volume2>
-                          Audio
+                          {t("audio")}
                         </button>
 
                       </div>
@@ -1758,20 +1759,20 @@ export default function App() {
                         </p>
                         <p className="text-base font-normal">
                           {selectedFile
-                            ? "Pulsa o arrastra otro archivo para cambiarlo"
-                            : "Haz clic o arrastra aquí tu archivo"}
+                            ? t("change-file")
+                            : t("drag-file")}
                         </p>
                       </div>
                       <p className="text-xs text-slate-500">
                         {form.mode === "multimedia"
                           ? form.mediaType === "video"
-                            ? "Formatos habituales: MP4, MOV, AVI, WMV, MKV y WebM"
-                            : "Formatos habituales: MP3, WAV, M4A y OGG."
-                          : "Formatos habituales:.pdf,.ppt,.pptx"}
+                            ? t("formats-video")
+                            : t("formats-audio")
+                          : t("formats-documents")}
                       </p>
 
                       <div className="mt-2 ml-4 shrink-0 rounded-xl bg-color-primary px-3 py-2 text-sm font-medium text-white">
-                        Examinar
+                        {t("btn-new-task")}
                       </div>
                     </label>
                     {errors.file && (
@@ -1779,7 +1780,7 @@ export default function App() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-semibold text-base">Correo Electrónico:</Label>
+                    <Label htmlFor="email" className="text-semibold text-base">{t("label-email")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -1790,13 +1791,13 @@ export default function App() {
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder="Ingresar dirección de correo, por ejemplo nombre@universidad.com"
+                      placeholder={t("place-holder-email")}
                     />
                     {errors.email && (
                       <p className="text-sm text-red-600">{errors.email}</p>
                     )}
                     <p className="text-xs text-slate-500">
-                      Usaremos este correo para enviarte una notificación, cuando el procesamiento haya finalizado, con el código necesario para localizar tu tarea.
+                      {t("email-text")}
                     </p>
                     
                   </div>
@@ -1965,13 +1966,13 @@ export default function App() {
                     />
 
                     <label htmlFor="terms" className="text-sm text-slate-700">
-                      Acepto los{" "}
+                      {t("text-acepts")}{" "}
                       <button
                         type="button"
                         onClick={() => setShowTerms(true)}
                         className="text-blue-600 underline"
                       >
-                        términos y condiciones
+                        {t("terms")}
                       </button>
                     </label>
                   </div>
@@ -1980,7 +1981,7 @@ export default function App() {
                     type="submit"
                     disabled={!acceptedTerms || submitting}
                   >
-                    Enviar Archivo
+                    {t("btn-submit")}
                     {submitting ? (
                       <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     ) : (
@@ -2000,10 +2001,10 @@ export default function App() {
                 {success && (
                   <div className="rounded-2xl border-success bg-success-50 px-4 py-3 text-sm text-green-700">
                     <p className="text-lg text-center">
-                      ¡Recibimos tu archivo!
+                      {t("success-title")}
                     </p>
                     <p>
-                         Cuando el proceso haya finalizado recibirás una notificación por correo electrónico con el código necesario para localizar la tarea.
+                         {t("success-text")}
                     </p>
                     
                   </div>
@@ -2019,17 +2020,17 @@ export default function App() {
                 <div className="flex items-start gap-3">
                   <div>
                     <CardTitle className="text-lg text-color-primary py-1 px-4 font-bold text-lg">
-                        LOCALIZÁ TU TAREA
+                        {t("search-tile")}
                     </CardTitle>
                   </div>
                 </div>
                 {profile === "technical" && (
                   <div className="flex gap-2 justify-end">
                     {[
-                      { key: "all", label: "Todas" },
-                      { key: "active", label: "Activas" },
-                      { key: "finished", label: "Finalizadas" },
-                      { key: "error", label: "Errores" },
+                      { key: "all", label: t("task-all") },
+                      { key: "active", label: t("task-active") },
+                      { key: "finished", label: t("task-finished") },
+                      { key: "error", label: t("task-error") },
                     ].map((item) => (
                       <button
                         key={item.key}
@@ -2055,34 +2056,34 @@ export default function App() {
               placeholder="Ingresá el código que recibiste por correo electrónico"
             />
             <p className="text-xs mb-2">
-              En este campo podrás recuperar una tarea concreta, consultar su estado o descargar tus resultados.
+              {t("search-text")}
             </p>
           </div>
         </article>
         {profile === "technical" && (
           <article>
-            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-6">
+            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4 xl:grid-cols-5">
               <MetricCard title="En cola" value={counts.queued} icon={Clock3} tone="amber" />
               <MetricCard
-                title="Procesando"
+                title={t("task-processing")}
                 value={counts.processing}
                 icon={Loader2}
                 tone="blue"
               />
               <MetricCard
-                title="Finalizadas"
+                title={t("task-finished")}
                 value={counts.finished}
                 icon={CheckCircle2}
                 tone="green"
               />
               <MetricCard
-                title="Con error"
+                title={t("task-with-error")}
                 value={counts.error}
                 icon={AlertTriangle}
                 tone="rose"
               />
               <MetricCard
-                title="Notificadas"
+                title={t("task-notified")}
                 value={counts.notified}
                 icon={Mail}
                 tone="slate"
@@ -2100,13 +2101,13 @@ export default function App() {
                   </div>
                   <p className="text-sm font-medium text-slate-700">
                     {searchId.trim()
-                      ? "No se encontró ningún trabajo con ese ID."
-                      : "No hay tareas para este filtro."}
+                      ? t("error-1")
+                      : t("error-2")}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
                     {searchId.trim()
-                      ? "Revisa el ID o cambia el filtro seleccionado."
-                      : "Cuando envíes trabajos aparecerán aquí con su progreso."}
+                      ? t("error-3")
+                      : t("error-4")}
                   </p>
                 </div>
               ) : (
@@ -2162,7 +2163,7 @@ export default function App() {
 
                           <div className="mt-4">
                             <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                              <span>Progreso</span>
+                              <span>{t("text-progress")}</span>
                               <span>{task.progress ?? 0}%</span>
                             </div>
 
@@ -2183,7 +2184,7 @@ export default function App() {
                             <div className="flex min-w-0 items-center gap-2">
                               <Mail className="h-4 w-4 shrink-0" />
                               <span className="truncate">
-                                Notificación:{" "}
+                                {t("notification")}{" "}
                                 <span className="font-medium text-slate-700">
                                   {getNotificationState(task)}
                                 </span>
@@ -2191,7 +2192,7 @@ export default function App() {
                             </div>
 
                             <div className="inline-flex shrink-0 items-center gap-1 text-slate-500">
-                              <span>Ver detalle</span>
+                              <span>{t("text-detail")}</span>
                               <ChevronRight className="h-4 w-4" />
                             </div>
                           </div>
@@ -2211,10 +2212,10 @@ export default function App() {
                         }
                         disabled={currentPage === 1}
                       >
-                        Anterior
+                        {t("before")}
                       </Button>
                       <span className="font-medium text-slate-800">
-                        Página {currentPage} de {totalPages}
+                        {t("page")} {currentPage} de {totalPages}
                       </span>
                       <Button
                         type="button"
@@ -2225,7 +2226,7 @@ export default function App() {
                         }
                         disabled={currentPage === totalPages}
                       >
-                        Siguiente
+                        {t("next")}
                       </Button>
                     </div>
                   ) : null}
@@ -2238,7 +2239,7 @@ export default function App() {
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <CardTitle className="text-lg text-color-primary font-bold py-1 px-2">
-                      RESULTADOS
+                      {t("results")}
                   </CardTitle>
                 </div>
                 <div>
@@ -2262,7 +2263,7 @@ export default function App() {
               {!selectedTask ? (
                 <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
                   <p className="text-sm font-medium text-slate-700">
-                    Selecciona una tarea para ver el detalle.
+                    {t("error-5")}
                   </p>
                 </div>
               ) : (
@@ -2271,7 +2272,7 @@ export default function App() {
                     
 
                     <h3 className="text-lg font-semibold">
-                      {selectedTask.resource || "Código"} : {selectedTask.id}
+                      {selectedTask.resource || t("code")} : {selectedTask.id}
                     </h3>
 
                     <div className="mt-2 grid gap-2 text-normal">
@@ -2284,11 +2285,11 @@ export default function App() {
                         </div>
                       ) : null}
                       <div className="rounded-xl bg-slate-50">
-                        <span className="font-medium">Correo Electrónico:</span>{" "}
+                        <span className="font-medium">{t("label-email")}</span>{" "}
                         {selectedTask.email || "-"}
                       </div>
                       <div className="rounded-xl bg-slate-50 hidden">
-                        <span className="font-medium">Notificación:</span>{" "}
+                        <span className="font-medium">{t("notification")}:</span>{" "}
                         {getNotificationState(selectedTask)}
                       </div>
                     </div>
@@ -2321,25 +2322,25 @@ export default function App() {
                   {selectedTask?.task_type === "video" && selectedTaskCurrentVideoFile ? (
                     <div className="space-y-3">
                       <p className="text-sm font-medium text-slate-900">
-                        Ver video subtitulado
+                        {t("view-video")}
                       </p>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <video
                           controls
-                          className="w-full rounded-xl bg-black"
+                          className="w-full rounded-xl bg-black video-container"
                           src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskCurrentVideoFile,
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
-                          Tu navegador no soporta reproducción de video.
+                          {t("error-6")}
                         </video>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
                           <p className="text-xs text-slate-500">
                             {selectedTaskCurrentJsonFile
-                              ? `Subtítulos mostrados en ${selectedTaskCurrentDownloadMeta.label}.`
-                              : "video con subtítulos incrustados."}
+                              ? `${t("subtitle-show")} ${selectedTaskCurrentDownloadMeta.label}.`
+                              : "Vídeo con subtítulos incrustados."}
                           </p>
 
                           <Button
@@ -2350,7 +2351,7 @@ export default function App() {
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskCurrentVideoFile])}
                           >
                             <Download className="mr-2 h-4 w-4" />
-                            Descargar video
+                            {t("download-video")}
                           </Button>
                         </div>
                       </div>
@@ -2360,7 +2361,7 @@ export default function App() {
                   {selectedTaskAudioFile ? (
                     <div className="space-y-3">
                       <p className="text-base font-medium">
-                        Reproducir Audio
+                        {t("audio-play")}
                       </p>
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <audio
@@ -2372,7 +2373,7 @@ export default function App() {
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
-                          Tu navegador no soporta reproducción de audio.
+                          {t("error-7")}
                         </audio>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
@@ -2386,7 +2387,7 @@ export default function App() {
                             onClick={() => downloadGroup(selectedTask.id, [selectedTaskAudioFile])}
                           >
                             <Download className="mr-2 h-4 w-4" />
-                            Descargar Audio
+                            {t("download-audio")}
                           </Button>
                         </div>
                       </div>
@@ -2394,30 +2395,30 @@ export default function App() {
                   ) : null}
                   {selectedTask?.task_type === "documents" ?(
                     <div className="space-y-3 mt-10">
-                      <h3 className="text-base mb-2">Analizamos tu presentación en busca de oportunidades de mejora para ayudarte a crear materiales más claros y accesibles. <br />El análisis considera:</h3>
+                      <h3 className="text-base mb-2">{t("documents-text-1")} <br />{t("documents-text-2")}</h3>
                       <ul className="mb-10 mt-4">
                         <li className="mb-4">
-                          <h4 className="text-base font-semibold">Comprensión visual</h4>
+                          <h4 className="text-base font-semibold">{t("documents-text-3")}</h4>
                           <p className="text-base">
-                            Tamaño de letra, interlineado, tipografía, cantidad de texto, color y contraste.
+                            {t("documents-text-4")}
                           </p>
                         </li>
                         <li className="mb-4">
-                          <h4 className="text-base font-semibold">Organización del contenido</h4>
+                          <h4 className="text-base font-semibold">{t("documents-text-5")}</h4>
                           <p className="text-base">
-                            Jerarquía visual y cantidad de elementos por diapositiva.
+                            {t("documents-text-6")}
                           </p>
                         </li>
                         <li className="mb-4">
-                          <h4 className="text-base font-semibold">Uso de imágenes</h4>
+                          <h4 className="text-base font-semibold">{t("documents-text-7")}</h4>
                           <p className="text-base">
-                            Presencia de descripciones.
+                            {t("documents-text-8")}
                           </p>
                         </li>
                         <li className="mb-4">
-                          <h4 className="text-base font-semibold">Tiempo de lectura</h4>
+                          <h4 className="text-base font-semibold">{t("documents-text-9")}</h4>
                           <p className="text-base">
-                            Estimación del tiempo total de la presentación
+                            {t("documents-text-10")}
                           </p>
                         </li>
                       </ul>                         
@@ -2426,7 +2427,7 @@ export default function App() {
                   {selectedTaskJsonFiles.length > 0 ? (
                     <div className="space-y-3">
                       <h4 className="text-lg font-medium">
-                        {selectedTaskIsDocument ? "Informe de Accesibilidad del Documento" : "Ver transcripción"}
+                        {selectedTaskIsDocument ? t("title-report") : t("title-transcription")}
                       </h4>
 
                       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -2454,7 +2455,7 @@ export default function App() {
                           loadingJsonPreviewKey === selectedTaskCurrentJsonCacheKey ? (
                             <div className="flex items-center gap-2 text-sm text-slate-500">
                               <Loader2 className="h-4 w-4 animate-spin" />
-                              Cargando vista previa...
+                              {t("loading")}
                             </div>
                           ) : selectedTaskCurrentJsonCacheKey &&
                             previewJsonByFile[selectedTaskCurrentJsonCacheKey]?.error ? (
@@ -2503,7 +2504,7 @@ export default function App() {
                             </div>
                           ) : (
                             <div className="text-sm text-slate-500">
-                              No hay segmentos disponibles para esta vista.
+                              {t("error-8")}
                             </div>
                           )}
                         </div>
@@ -2523,11 +2524,11 @@ export default function App() {
                             <span>
                               {selectedTaskIsDocument
                                 ? selectedTaskCurrentJsonFile?.key === "original"
-                                  ? "Descargas disponibles"
-                                  : `Descargas en ${selectedTaskCurrentDownloadMeta.label}`
+                                  ? t("downloads-avaible")
+                                  : `${t("downloads-in")} ${selectedTaskCurrentDownloadMeta.label}`
                                 : selectedTaskCurrentJsonFile?.key === "original"
-                                ? "Descargas disponibles"
-                                : `Descargas en ${selectedTaskCurrentDownloadMeta.label}`}
+                                ? t("downloads-avaible")
+                                : `${t("downloads-in")}  ${selectedTaskCurrentDownloadMeta.label}`}
                             </span>
                           </div>
 
@@ -2543,7 +2544,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                  Original
+                                  {t("download-original")} 
                                 </Button>
                               ) : null}
 
@@ -2557,7 +2558,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                   Descargar recomendaciones
+                                   {t("download-report")} 
                                 </Button>
                               ) : null}
                             </div>
@@ -2573,7 +2574,7 @@ export default function App() {
                                   }
                                 >
                                   <Download className="mr-2 h-4 w-4" />
-                                  Texto
+                                   {t("text")} 
                                 </Button>
                               ) : null}
 
@@ -2652,10 +2653,10 @@ export default function App() {
                   <div>
                     <CardTitle className="text-lg text-slate-950 bg-color-primary items-center flex text-white new-rounded py-3 px-4">
                       <Cpu className="h-6 w-6 mr-2" />
-                        Información del procesamiento
+                        {t("technical-information")} 
                     </CardTitle>
                     <CardDescription className="mt-1 text-slate-600">
-                      Seguimiento técnico y registro de ejecución de la tarea seleccionada.
+                      {t("technical-text")}
                     </CardDescription>
                   </div>
                 </div>
@@ -2665,7 +2666,7 @@ export default function App() {
                 {!selectedTask ? (
                   <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center">
                     <p className="text-sm font-medium text-slate-700">
-                      Selecciona una tarea para ver la información del procesamiento.
+                      {t("error-9")}
                     </p>
                   </div>
                 ) : (
@@ -2673,7 +2674,7 @@ export default function App() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-slate-900">
-                          Tarea seleccionada
+                          {t("task-selected")}
                         </p>
                         <p className="text-sm break-all text-slate-500">
                           ID: {selectedTask.id}
@@ -2688,8 +2689,8 @@ export default function App() {
                             className="h-10 w-10 rounded-xl p-0"
                             onClick={() => downloadLog(selectedTask.id)}
                             disabled={loadingLogId === selectedTask.id}
-                            aria-label="Descargar información del procesamiento"
-                            title="Descargar información del procesamiento"
+                            aria-label={t("download-info")}
+                            title={t("download-info")}
                           >
                             {loadingLogId === selectedTask.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -2706,7 +2707,7 @@ export default function App() {
                           onClick={() => toggleLog(selectedTask.id)}
                           disabled={loadingLogId === selectedTask.id}
                         >
-                          {showLogByTask[selectedTask.id] ? "Ocultar" : "Mostrar"}
+                          {showLogByTask[selectedTask.id] ? t("show") : t("hide")}
                         </Button>
                       </div>
                     </div>
@@ -2718,18 +2719,18 @@ export default function App() {
                             className="max-h-[260px] overflow-auto rounded-xl"
                           >
                             <pre className="whitespace-pre-wrap break-words text-xs leading-6 text-slate-100">
-                              {logsByTask[selectedTask.id] || "Registro vacío."}
+                              {logsByTask[selectedTask.id] || t("error-10")}
                             </pre>
                           </div>
                         </div>
                       ) : (
                         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
-                          Cargando información del procesamiento...
+                          {t("technical-loading")}
                         </div>
                       )
                     ) : (
                       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-500">
-                        Pulsa en “Mostrar” para ver el registro de ejecución.
+                        {t("error-11")}
                       </div>
                     )}
                   </div>
@@ -2743,10 +2744,7 @@ export default function App() {
       <footer className="mt-2 pt-6 pb-2 color-primary">
           <div className="mx-auto max-w-5xl px-4 text-center">
             <p className="mx-auto max-w-5xl color-primary text-sm">
-              Aiuda se desarrolla en el marco de Labs UniversitarIA, iniciativa de colaboración interuniversitaria
-              impulsada por la DIPyC de la Secretaría General Iberoamericana (SEGIB), junto con la Universidade da Coruña,
-              la Universidad de Chile, la Universidad Tecnológica del Uruguay, la Universidad de Buenos Aires y la Universidade
-              Federal do Rio de Janeiro, con el apoyo de la Agencia Española de Cooperación Internacional para el Desarrollo (AECID).
+              {t("text-footer")}
             </p>
           </div>
           <div className="mt-4 bg-color-primary row p-4 flex flex-col md:flex-row gap-10 pb-8 items-center justify-center">
@@ -2755,11 +2753,11 @@ export default function App() {
               <img src={getPublicAssetUrl("assets/logos/universitariaia.png")} alt="Universitaria IA" className="logo-footer2"/>
             </div>
             <div className="md:w-1/3 flex flex-col gap-3">
-              <h4 className="text-white">Organizado por:</h4>
+              <h4 className="text-white">{t("footer-organized")}</h4>
               <img src={getPublicAssetUrl("assets/logos/logos.png")} alt="" />
             </div>
             <div className="md:w-1/4 flex flex-col gap-3">
-              <h4 className="text-white">Con el apoyo de:</h4>
+              <h4 className="text-white">{t("footer-support")}</h4>
               <img src={getPublicAssetUrl("assets/logos/logo_aecid.png")} alt="AECID" className="logo-footer4"/>
             </div>
           </div>

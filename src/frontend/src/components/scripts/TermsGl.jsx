@@ -1,4 +1,4 @@
-export default function TermsGl({ onClose }) {
+export default function TermsGl({ onClose , getPublicAssetUrl }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full
@@ -17,7 +17,7 @@ export default function TermsGl({ onClose }) {
             Ao descargar, instalar, acceder ou usar calquera funcionalidade desta plataforma, vostede (en diante, "o Usuario") declara que leu, comprendeu e aceptou todas as cláusulas aquí establecidas.
           </p>
           <h3 className="text-lg font-semibold mt-4">
-            ID
+            Identificación
           </h3>
           <p className="text-md mb-2">
             <strong>Aiuda</strong> es un desarrollo nacido en torno a <strong> Labs UniversitarIA,</strong> una iniciativa de colaboración interuniversitaria impulsada por la Secretaría General Iberoamericana (SEGIB), organismo internacional de apoyo a los 22 países que conforman la comunidad iberoamericana.
@@ -147,7 +147,7 @@ export default function TermsGl({ onClose }) {
           <p className="text-md mb-2">
             A SEGIB resérvase o dereito de modificar os termos da licenza de acordo coa evolución técnica e xurídica da ferramenta. O uso continuado da aplicación despois de tales cambios implica a aceptación dos novos termos. Para a resolución de disputas, as partes acordan expresamente someterse ás leis e tribunais da cidade onde a universidade implementadora establece o seu domicilio social, renunciando irrevocablemente ao seu propio foro ou domicilio.
           </p>
-          <img src="/aiuda/assets/by-nc-sa.png" alt="Licencia Creative Commons" className="mt-2" width="150"/>
+          <img src={getPublicAssetUrl("assets/by-nc-sa.png")} alt="Licenza Creative Commons" className="logo-footer2"/>
           <p className="text-md mt-4 mb-2">
             Elaborado por Darío Riquelme Z. <br />
             Revisado por Ana Abac

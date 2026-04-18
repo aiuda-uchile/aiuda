@@ -1,4 +1,4 @@
-export default function TermsPt({ onClose }) {
+export default function TermsPt({ onClose, getPublicAssetUrl }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full
@@ -161,7 +161,7 @@ export default function TermsPt({ onClose }) {
             A SEGIB reserva-se o direito de modificar os termos conforme evolução da ferramenta. O uso contínuo implica aceitação dos novos termos.
           </p>
 
-          <img src="/aiuda/assets/by-nc-sa.png" alt="Licença Creative Commons" className="mt-2" width="150"/>
+          <img src={getPublicAssetUrl("assets/by-nc-sa.png")} alt="Licença Creative Commons" className="logo-footer2"/>
 
           <p className="text-md mt-4 mb-2">
             Elaborado por Darío Riquelme Z. <br />

@@ -121,6 +121,21 @@ nav button.active, nav a.active{
     list-style: circle;
     margin: 0.5em 0em 0.5em 1.5em;
 }
+.video-container{
+    max-height: 300px;
+}
+.xl\:grid-cols-5 {
+    @media (width >= 70rem) {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+.border-primary.intro{
+    border: 3px solid var(--color-primary-1);
+}
+.features h4.text-base{
+    font-size: 0.95em!important;
+    margin-top: 0.25em;
+}
 /*--INTRO--*/
 .lang{
     font-weight: 600;

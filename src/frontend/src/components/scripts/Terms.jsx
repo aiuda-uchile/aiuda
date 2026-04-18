@@ -1,4 +1,4 @@
-export default function Terms({ onClose }) {
+export default function Terms({ onClose, getPublicAssetUrl }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full
@@ -148,7 +148,7 @@ export default function Terms({ onClose }) {
           <p className="text-md mb-2">
             SEGIB se reserva el derecho de modificar las condiciones de licenciamiento conforme a la evolución técnica y jurídica de la herramienta. El uso continuado de la aplicación tras dichos cambios implica la aceptación de los nuevos términos. Para la resolución de conflictos, las partes acuerdan la sumisión expresa a la legislación y tribunales de la ciudad donde la Universidad que ha implementado defina su domicilio, renunciando irrevocablemente a su propio fuero o domicilio.
           </p>
-          <img src="/aiuda/assets/by-nc-sa.png" alt="Licencia Creative Commons" className="mt-2" width="150"/>
+          <img src={getPublicAssetUrl("assets/by-nc-sa.png")} alt="Licencia Creative Commons" className="logo-footer2"/>
           <p className="text-md mt-4 mb-2">
             Elaborado por Darío Riquelme Z. <br />
             Revisado por Ana Abac
