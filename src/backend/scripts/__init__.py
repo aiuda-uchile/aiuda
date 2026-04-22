@@ -1,1 +1,1 @@
-"""Processing scripts for ALUDA backend."""
+"""Processing scripts for AIUDA backend."""

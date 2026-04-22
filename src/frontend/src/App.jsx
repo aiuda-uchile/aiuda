@@ -796,7 +796,7 @@ export default function App() {
   async function fetchTasks(silent = false) {
     if (!silent) setLoadingTasks(true)
     try {
-      const response = await fetch("/api/tasks")
+      const response = await fetch("/aiuda/api/tasks")
       if (!response.ok) {
         throw new Error(`No se pudieron cargar las tareas (${response.status})`)
       }
@@ -964,7 +964,7 @@ export default function App() {
       formData.append("target_langs", payload.target_langs)
       formData.append("ui_lang", lang)
 
-      const response = await fetch("http://127.0.0.1:8000/api/tasks", {
+      const response = await fetch("/aiuda/api/tasks", {
         method: "POST",
         body: formData,
       })
@@ -983,7 +983,7 @@ export default function App() {
       setSelectedFile(null)
       setAcceptedTerms(false)
 
-      const fileInput = document.getElementById("aluda-file-input")
+      const fileInput = document.getElementById("aiuda-file-input")
       if (fileInput) fileInput.value = ""
 
       setSuccess(true)
@@ -1036,7 +1036,7 @@ export default function App() {
     files.forEach((filename, index) => {
       window.setTimeout(() => {
         const link = document.createElement("a")
-        link.href = `/api/tasks/${taskId}/download/${encodeURIComponent(
+        link.href = `/aiuda/api/tasks/${taskId}/download/${encodeURIComponent(
           filename,
         )}`
         link.download = filename
@@ -1048,7 +1048,7 @@ export default function App() {
   }
 
   async function fetchLogText(taskId) {
-    const response = await fetch(`/api/tasks/${taskId}/log`)
+    const response = await fetch(`/aiuda/api/tasks/${taskId}/log`)
 
     if (!response.ok) {
       throw new Error(`No se pudo cargar la información del procesamiento (${response.status})`)
@@ -1116,7 +1116,7 @@ export default function App() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `aluda-procesamiento-${taskId}.log`
+      link.download = `aiuda-procesamiento-${taskId}.log`
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -1150,7 +1150,7 @@ export default function App() {
       setLoadingJsonPreviewKey(cacheKey)
 
       const response = await fetch(
-        `/api/tasks/${taskId}/download/${encodeURIComponent(filename)}`,
+        `/aiuda/api/tasks/${taskId}/download/${encodeURIComponent(filename)}`,
       )
 
       if (!response.ok) {
@@ -1717,10 +1717,10 @@ export default function App() {
 
                   {/*--INPUT FILE--*/}
                   <div className="space-y-2">
-                    <Label htmlFor="aluda-file-input" className="hidden">Archivo:</Label>
+                    <Label htmlFor="aiuda-file-input" className="hidden">Archivo:</Label>
 
                     <input
-                      id="aluda-file-input"
+                      id="aiuda-file-input"
                       type="file"
                       accept={getAcceptForForm(form.mode, form.mediaType)}
                       onChange={(e) => { setSelectedFile(e.target.files?.[0] ?? null); setErrors({}) }}
@@ -1728,7 +1728,7 @@ export default function App() {
                     />
 
                     <label
-                      htmlFor="aluda-file-input"
+                      htmlFor="aiuda-file-input"
                       onDragOver={(e) => {
                         e.preventDefault()
                         setIsDraggingFile(true)
@@ -2328,7 +2328,7 @@ export default function App() {
                         <video
                           controls
                           className="w-full rounded-xl bg-black video-container"
-                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          src={`/aiuda/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskCurrentVideoFile,
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
@@ -2368,7 +2368,7 @@ export default function App() {
                           ref={audioPlayerRef}
                           controls
                           className="w-full"
-                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          src={`/aiuda/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskAudioFile,
                           )}`}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}

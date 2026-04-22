@@ -23,7 +23,7 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 os.environ.setdefault("OMP_NUM_THREADS", "4")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
-APP_NAME = "ALUDA Docs Pipeline"
+APP_NAME = "AIUDA Docs Pipeline"
 DEFAULT_TRANSLATION_MODEL = "facebook/nllb-200-distilled-600M"
 ALLOWED_TARGETS = {"es", "en", "pt", "gl"}
 NLLB_LANG_MAP = {
@@ -138,7 +138,7 @@ CVD_MATRICES = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="ALUDA - análisis documental y generación de informes multilingües"
+        description="AIUDA - análisis documental y generación de informes multilingües"
     )
     parser.add_argument("input_file", type=str, help="Archivo PDF/PPT/PPTX de entrada")
     parser.add_argument(
@@ -237,7 +237,7 @@ def collect_output_filenames(output_dir: Path) -> List[str]:
 
 
 def build_logger(output_dir: Path) -> logging.Logger:
-    logger = logging.getLogger("aluda_docs")
+    logger = logging.getLogger("aiuda_docs")
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
 
@@ -1251,7 +1251,7 @@ def _convert_ppt_to_pptx(input_file: Path, logger: logging.Logger) -> Path:
             "Convierte el archivo a .pptx o instala LibreOffice en el servidor."
         )
 
-    tmp_dir = Path(tempfile.mkdtemp(prefix="aluda_ppt_convert_"))
+    tmp_dir = Path(tempfile.mkdtemp(prefix="aiuda_ppt_convert_"))
     cmd = [
         soffice,
         "--headless",
@@ -2299,7 +2299,7 @@ def _prepare_preview_pdf(input_file: Path, logger: logging.Logger) -> Tuple[Opti
         logger.warning("No se pudo generar previsualización de prioridades: LibreOffice no está disponible.")
         return None, None
 
-    tmp_dir = Path(tempfile.mkdtemp(prefix="aluda_preview_pdf_"))
+    tmp_dir = Path(tempfile.mkdtemp(prefix="aiuda_preview_pdf_"))
     cmd = [
         soffice,
         "--headless",
@@ -3064,7 +3064,7 @@ def render_html_to_pdf(html_content: str, pdf_path: Path, payload: Optional[dict
 
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
-            "AludaTitle",
+            "AiudaTitle",
             parent=styles["Title"],
             fontName="Helvetica-Bold",
             fontSize=20,
@@ -3074,7 +3074,7 @@ def render_html_to_pdf(html_content: str, pdf_path: Path, payload: Optional[dict
             alignment=TA_LEFT,
         )
         heading_style = ParagraphStyle(
-            "AludaHeading",
+            "AiudaHeading",
             parent=styles["Heading2"],
             fontName="Helvetica-Bold",
             fontSize=14,
@@ -3084,7 +3084,7 @@ def render_html_to_pdf(html_content: str, pdf_path: Path, payload: Optional[dict
             spaceBefore=12,
         )
         body_style = ParagraphStyle(
-            "AludaBody",
+            "AiudaBody",
             parent=styles["BodyText"],
             fontName="Helvetica",
             fontSize=9.5,
@@ -3092,7 +3092,7 @@ def render_html_to_pdf(html_content: str, pdf_path: Path, payload: Optional[dict
             textColor=colors.HexColor("#12263A"),
             spaceAfter=4,
         )
-        muted_style = ParagraphStyle("AludaMuted", parent=body_style, textColor=colors.HexColor("#536474"))
+        muted_style = ParagraphStyle("AiudaMuted", parent=body_style, textColor=colors.HexColor("#536474"))
 
         story: List[Any] = []
         story.append(Paragraph(html.escape(str(summary.get("title", "Informe documental"))), title_style))

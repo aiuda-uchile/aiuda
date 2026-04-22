@@ -6,7 +6,7 @@ import path from "path"
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8000"
 
 export default defineConfig({
-  base: '/aiuda/',
+  base: 'aiuda/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -16,6 +16,11 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": apiProxyTarget,
+      "/aiuda/api": {
+        target: apiProxyTarget,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/aiuda\/api/, "/api"),
+      },
     },
   },
 })

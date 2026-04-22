@@ -39,9 +39,9 @@ UPLOADS_DIR = JOBS_DIR / "uploads"
 TASKS_DB = JOBS_DIR / "tasks.json"
 LOGS_DIR = PROJECT_DIR / "logs"
 
-AUDIO_SCRIPT = BASE_DIR / "scripts" / "aluda_audio_pipeline.py"
-VIDEO_SCRIPT = BASE_DIR / "scripts" / "aluda_video_pipeline.py"
-DOCS_SCRIPT = BASE_DIR / "scripts" / "aluda_docs_pipeline.py"
+AUDIO_SCRIPT = BASE_DIR / "scripts" / "aiuda_audio_pipeline.py"
+VIDEO_SCRIPT = BASE_DIR / "scripts" / "aiuda_video_pipeline.py"
+DOCS_SCRIPT = BASE_DIR / "scripts" / "aiuda_docs_pipeline.py"
 
 DEFAULT_AUDIO_TARGETS = ["es", "en", "pt", "gl"]
 DEFAULT_VIDEO_TARGETS = ["es", "en", "pt", "gl"]
@@ -50,27 +50,146 @@ DEFAULT_DOC_TARGETS = ["es", "en", "pt", "gl"]
 MAX_WORKERS = 1
 PYTHON_BIN = "python"
 
-SMTP_HOST = os.getenv("ALUDA_SMTP_HOST", "").strip()
-SMTP_PORT = int(os.getenv("ALUDA_SMTP_PORT", "587"))
-SMTP_USER = os.getenv("ALUDA_SMTP_USER", "").strip()
-SMTP_PASSWORD = os.getenv("ALUDA_SMTP_PASSWORD", "").strip()
-SMTP_FROM = os.getenv("ALUDA_SMTP_FROM", SMTP_USER).strip()
-SMTP_SECURITY = os.getenv("ALUDA_SMTP_SECURITY", "tls").strip().lower()  # tls | ssl | none
-MAX_EMAIL_ATTACH_MB = int(os.getenv("ALUDA_MAX_EMAIL_ATTACH_MB", "20"))
+SMTP_HOST = os.getenv("AIUDA_SMTP_HOST", "").strip()
+SMTP_PORT = int(os.getenv("AIUDA_SMTP_PORT", "587"))
+SMTP_USER = os.getenv("AIUDA_SMTP_USER", "").strip()
+SMTP_PASSWORD = os.getenv("AIUDA_SMTP_PASSWORD", "").strip()
+SMTP_FROM = os.getenv("AIUDA_SMTP_FROM", SMTP_USER).strip()
+SMTP_SECURITY = os.getenv("AIUDA_SMTP_SECURITY", "tls").strip().lower()  # tls | ssl | none
+MAX_EMAIL_ATTACH_MB = int(os.getenv("AIUDA_MAX_EMAIL_ATTACH_MB", "20"))
 
-ALUDA_LOGO_PATH = Path(
-    os.getenv("ALUDA_LOGO_PATH", str(BASE_DIR / "resources" / "mail" / "aluda-logo.png"))
+AIUDA_LOGO_PATH = Path(
+    os.getenv("AIUDA_LOGO_PATH", str(BASE_DIR / "resources" / "mail" / "aiuda-logo.png"))
 )
-ALUDA_FOOTER_PATH = Path(
-    os.getenv("ALUDA_FOOTER_PATH", str(BASE_DIR / "resources" / "mail" / "aluda-footer.png"))
+AIUDA_FOOTER_PATH = Path(
+    os.getenv("AIUDA_FOOTER_PATH", str(BASE_DIR / "resources" / "mail" / "aiuda-footer.png"))
 )
 
-ALUDA_FOOTER_TEXT = (
-    "Aiuda forma parte del programa Labs UniversitarIA, una iniciativa interuniversitaria "
-    "impulsada por la DIPyC-SEGIB junto con la Universidade da Coruña, la Universidad de Chile, "
-    "la Universidad Tecnológica del Uruguay, la Universidad de Buenos Aires y la Universidade "
-    "Federal do Rio de Janeiro, con el apoyo de AECID."
-)
+AIUDA_FOOTER_TEXTS = {
+    "es": (
+        "Aiuda forma parte del programa Labs UniversitarIA, una iniciativa interuniversitaria "
+        "impulsada por la DIPyC-SEGIB junto con la Universidade da Coruña, la Universidad de Chile, "
+        "la Universidad Tecnológica del Uruguay, la Universidad de Buenos Aires y la Universidade "
+        "Federal do Rio de Janeiro, con el apoyo de AECID."
+    ),
+    "gl": (
+        "Aiuda forma parte do programa Labs UniversitarIA, unha iniciativa interuniversitaria "
+        "impulsada pola DIPyC-SEGIB xunto coa Universidade da Coruña, a Universidad de Chile, "
+        "a Universidad Tecnológica del Uruguay, a Universidad de Buenos Aires e a Universidade "
+        "Federal do Rio de Janeiro, co apoio da AECID."
+    ),
+    "pt": (
+        "O Aiuda faz parte do programa Labs UniversitarIA, uma iniciativa interuniversitária "
+        "impulsionada pela DIPyC-SEGIB em conjunto com a Universidade da Coruña, a Universidad de Chile, "
+        "a Universidad Tecnológica del Uruguay, a Universidad de Buenos Aires e a Universidade "
+        "Federal do Rio de Janeiro, com o apoio da AECID."
+    ),
+    "en": (
+        "Aiuda is part of the Labs UniversitarIA programme, an inter-university initiative "
+        "promoted by DIPyC-SEGIB together with Universidade da Coruña, Universidad de Chile, "
+        "Universidad Tecnológica del Uruguay, Universidad de Buenos Aires and Universidade "
+        "Federal do Rio de Janeiro, with the support of AECID."
+    ),
+}
+
+MAIL_TRANSLATIONS = {
+    "es": {
+        "greeting": "Hola,",
+        "intro_finished": "Tu solicitud en Aiuda ha finalizado correctamente.",
+        "intro_error": "Tu solicitud en Aiuda ha finalizado con error.",
+        "intro_other": "Tu solicitud en Aiuda ha cambiado de estado.",
+        "status_finished": "completado",
+        "status_error": "error",
+        "summary_title": "Resumen del procesamiento",
+        "field_resource": "Recurso",
+        "field_type": "Tipo",
+        "field_status": "Estado",
+        "field_date": "Fecha de finalizacion",
+        "field_source_lang": "Idioma detectado",
+        "field_target_langs": "Idiomas de salida",
+        "notes_title": "Indicaciones adicionales",
+        "results_title": "Resultados generados",
+        "results_default": "Los resultados ya estan disponibles para su descarga desde la plataforma.",
+        "error_title": "Detalle del error",
+        "access_text": "Puedes acceder ahora a los resultados desde la plataforma de Aiuda.",
+        "task_id_label": "ID de la tarea:",
+        "thanks": "Gracias por utilizar Aiuda.",
+        "subject_finished": "Proceso completado",
+        "subject_error": "Proceso con error",
+    },
+    "gl": {
+        "greeting": "Ola,",
+        "intro_finished": "A tua solicitude en Aiuda rematou correctamente.",
+        "intro_error": "A tua solicitude en Aiuda rematou con erro.",
+        "intro_other": "A tua solicitude en Aiuda cambiou de estado.",
+        "status_finished": "completado",
+        "status_error": "erro",
+        "summary_title": "Resumo do procesamento",
+        "field_resource": "Recurso",
+        "field_type": "Tipo",
+        "field_status": "Estado",
+        "field_date": "Data de finalizacion",
+        "field_source_lang": "Idioma detectado",
+        "field_target_langs": "Idiomas de saida",
+        "notes_title": "Indicacions adicionais",
+        "results_title": "Resultados xerados",
+        "results_default": "Os resultados xa estan dispoñibles para a sua descarga desde a plataforma.",
+        "error_title": "Detalle do erro",
+        "access_text": "Podes acceder agora aos resultados desde a plataforma de Aiuda.",
+        "task_id_label": "ID da tarefa:",
+        "thanks": "Grazas por utilizar Aiuda.",
+        "subject_finished": "Proceso completado",
+        "subject_error": "Proceso con erro",
+    },
+    "pt": {
+        "greeting": "Ola,",
+        "intro_finished": "O seu pedido no Aiuda foi concluido com sucesso.",
+        "intro_error": "O seu pedido no Aiuda terminou com erro.",
+        "intro_other": "O seu pedido no Aiuda mudou de estado.",
+        "status_finished": "concluido",
+        "status_error": "erro",
+        "summary_title": "Resumo do processamento",
+        "field_resource": "Recurso",
+        "field_type": "Tipo",
+        "field_status": "Estado",
+        "field_date": "Data de conclusao",
+        "field_source_lang": "Idioma detetado",
+        "field_target_langs": "Idiomas de saida",
+        "notes_title": "Indicacoes adicionais",
+        "results_title": "Resultados gerados",
+        "results_default": "Os resultados ja estao disponiveis para transferencia a partir da plataforma.",
+        "error_title": "Detalhe do erro",
+        "access_text": "Pode aceder agora aos resultados a partir da plataforma Aiuda.",
+        "task_id_label": "ID da tarefa:",
+        "thanks": "Obrigado por utilizar o Aiuda.",
+        "subject_finished": "Processo concluido",
+        "subject_error": "Processo com erro",
+    },
+    "en": {
+        "greeting": "Hello,",
+        "intro_finished": "Your Aiuda request has completed successfully.",
+        "intro_error": "Your Aiuda request has finished with an error.",
+        "intro_other": "Your Aiuda request has changed status.",
+        "status_finished": "completed",
+        "status_error": "error",
+        "summary_title": "Processing summary",
+        "field_resource": "Resource",
+        "field_type": "Type",
+        "field_status": "Status",
+        "field_date": "Completion date",
+        "field_source_lang": "Detected language",
+        "field_target_langs": "Output languages",
+        "notes_title": "Additional instructions",
+        "results_title": "Generated results",
+        "results_default": "The results are now available for download from the platform.",
+        "error_title": "Error detail",
+        "access_text": "You can now access the results from the Aiuda platform.",
+        "task_id_label": "Task ID:",
+        "thanks": "Thank you for using Aiuda.",
+        "subject_finished": "Process completed",
+        "subject_error": "Process with error",
+    },
+}
 
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 os.environ.setdefault("OMP_NUM_THREADS", "4")
@@ -80,7 +199,7 @@ os.environ.setdefault("OMP_NUM_THREADS", "4")
 # APP
 # =========================================================
 
-app = FastAPI(title="ALUDA Backend API", version="1.0.0")
+app = FastAPI(title="AIUDA Backend API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -224,25 +343,90 @@ def guess_mime_type(path: Path) -> tuple[str, str]:
     return maintype, subtype
 
 
-LANGUAGE_LABELS = {
-    "auto": "automático",
-    "es": "español",
-    "en": "inglés",
-    "pt": "portugués",
-    "gl": "gallego",
-    "fr": "francés",
-    "it": "italiano",
-    "de": "alemán",
-    "ca": "catalán",
-    "eu": "euskera",
+LANGUAGE_LABELS_I18N = {
+    "es": {
+        "auto": "automático",
+        "es": "español",
+        "en": "inglés",
+        "pt": "portugués",
+        "gl": "gallego",
+        "fr": "francés",
+        "it": "italiano",
+        "de": "alemán",
+        "ca": "catalán",
+        "eu": "euskera",
+    },
+    "gl": {
+        "auto": "automatico",
+        "es": "español",
+        "en": "inglés",
+        "pt": "portugués",
+        "gl": "galego",
+        "fr": "francés",
+        "it": "italiano",
+        "de": "alemán",
+        "ca": "catalán",
+        "eu": "éuscaro",
+    },
+    "pt": {
+        "auto": "automático",
+        "es": "espanhol",
+        "en": "inglês",
+        "pt": "português",
+        "gl": "galego",
+        "fr": "francês",
+        "it": "italiano",
+        "de": "alemão",
+        "ca": "catalão",
+        "eu": "euskera",
+    },
+    "en": {
+        "auto": "automatic",
+        "es": "Spanish",
+        "en": "English",
+        "pt": "Portuguese",
+        "gl": "Galician",
+        "fr": "French",
+        "it": "Italian",
+        "de": "German",
+        "ca": "Catalan",
+        "eu": "Basque",
+    },
 }
 
-TASK_TYPE_LABELS = {
-    "audio": "audio",
-    "video": "vídeo",
-    "pdf": "documento PDF",
-    "ppt": "presentación PPT",
-    "pptx": "presentación PPT",
+TASK_TYPE_LABELS_I18N = {
+    "es": {
+        "audio": "audio",
+        "video": "vídeo",
+        "documents": "documento",
+        "pdf": "documento PDF",
+        "ppt": "presentación PPT",
+        "pptx": "presentación PPT",
+    },
+    "gl": {
+        "audio": "audio",
+        "video": "vídeo",
+        "documents": "documento",
+        "pdf": "documento PDF",
+        "ppt": "presentación PPT",
+        "pptx": "presentación PPT",
+    },
+    "pt": {
+        "audio": "audio",
+        "video": "video",
+        "documents": "documento",
+        "pdf": "documento PDF",
+        "ppt": "apresentação PPT",
+        "pptx": "apresentação PPT",
+    },
+    "en": {
+        "audio": "audio",
+        "video": "video",
+        "documents": "document",
+        "pdf": "PDF document",
+        "ppt": "PPT presentation",
+        "pptx": "PPT presentation",
+    },
 }
 
 VIDEO_UPLOAD_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".webm", ".m4v"}
@@ -263,16 +447,27 @@ def infer_task_type_from_upload(task_type: str, filename: str, content_type: str
     return task_type or "audio"
 
 
-def friendly_language(code: str) -> str:
+def friendly_language(code: str, ui_lang: str = "es") -> str:
     if not code:
         return "-"
-    return LANGUAGE_LABELS.get(code.lower(), code)
+    labels = LANGUAGE_LABELS_I18N.get(ui_lang, LANGUAGE_LABELS_I18N["es"])
+    return labels.get(code.lower(), code)
 
 
-def friendly_task_type(task_type: str) -> str:
+def friendly_task_type(task_type: str, ui_lang: str = "es") -> str:
     if not task_type:
-        return "recurso"
-    return TASK_TYPE_LABELS.get(task_type.lower(), task_type)
+        return {
+            "es": "recurso",
+            "gl": "recurso",
+            "pt": "recurso",
+            "en": "resource",
+        }.get(ui_lang, "recurso")
+    labels = TASK_TYPE_LABELS_I18N.get(ui_lang, TASK_TYPE_LABELS_I18N["es"])
+    return labels.get(task_type.lower(), task_type)
+
+
+def get_footer_text(ui_lang: str = "es") -> str:
+    return AIUDA_FOOTER_TEXTS.get(ui_lang, AIUDA_FOOTER_TEXTS["es"])
 
 
 def format_finished_at(value: str) -> str:
@@ -285,23 +480,74 @@ def format_finished_at(value: str) -> str:
         return value
 
 
-def format_languages_list(codes: List[str]) -> str:
+def format_languages_list(codes: List[str], ui_lang: str = "es") -> str:
     if not codes:
         return "-"
 
-    names = [friendly_language(code) for code in codes if code]
+    names = [friendly_language(code, ui_lang) for code in codes if code]
     if not names:
         return "-"
     if len(names) == 1:
         return names[0]
+
+    join_word = {
+        "es": "y",
+        "gl": "e",
+        "pt": "e",
+        "en": "and",
+    }.get(ui_lang, "y")
+
     if len(names) == 2:
-        return f"{names[0]} y {names[1]}"
-    return f"{', '.join(names[:-1])} y {names[-1]}"
+        return f"{names[0]} {join_word} {names[1]}"
+    return f"{', '.join(names[:-1])} {join_word} {names[-1]}"
 
 
 def infer_generated_results(task: Dict[str, Any], output_files: List[str]) -> List[str]:
     results: List[str] = []
     task_type = (task.get("task_type") or "").lower()
+    ui_lang = task.get("ui_lang", "es")
+
+    labels = {
+        "es": {
+            "transcription": "Transcripción",
+            "subtitles": "Subtítulos",
+            "multi_files": "Archivos en varios formatos para descarga",
+            "accessibility": "Informe de accesibilidad",
+            "ocr": "Procesamiento OCR",
+            "download_files": "Archivos de resultado para descarga",
+        },
+        "gl": {
+            "transcription": "Transcrición",
+            "subtitles": "Subtítulos",
+            "multi_files": "Arquivos en varios formatos para descarga",
+            "accessibility": "Informe de accesibilidade",
+            "ocr": "Procesamento OCR",
+            "download_files": "Arquivos de resultado para descarga",
+        },
+        "pt": {
+            "transcription": "Transcrição",
+            "subtitles": "Legendas",
+            "multi_files": "Arquivos em vários formatos para transferência",
+            "accessibility": "Relatório de acessibilidade",
+            "ocr": "Processamento OCR",
+            "download_files": "Arquivos de resultado para transferência",
+        },
+        "en": {
+            "transcription": "Transcription",
+            "subtitles": "Subtitles",
+            "multi_files": "Files in multiple formats available for download",
+            "accessibility": "Accessibility report",
+            "ocr": "OCR processing",
+            "download_files": "Result files available for download",
+        },
+    }.get(ui_lang, {
+        "transcription": "Transcripción",
+        "subtitles": "Subtítulos",
+        "multi_files": "Archivos en varios formatos para descarga",
+        "accessibility": "Informe de accesibilidad",
+        "ocr": "Procesamiento OCR",
+        "download_files": "Archivos de resultado para descarga",
+    })
 
     has_txt = any(name.endswith(".txt") for name in output_files)
     has_srt = any(name.endswith(".srt") for name in output_files)
@@ -310,20 +556,20 @@ def infer_generated_results(task: Dict[str, Any], output_files: List[str]) -> Li
 
     if task_type in {"audio", "video"}:
         if has_txt:
-            results.append("Transcripción")
+            results.append(labels["transcription"])
         if has_srt or has_vtt:
-            results.append("Subtítulos")
+            results.append(labels["subtitles"])
         if has_txt or has_srt or has_vtt or has_json:
-            results.append("Archivos en varios formatos para descarga")
-    elif task_type in {"pdf", "ppt", "pptx"}:
+            results.append(labels["multi_files"])
+    elif task_type in {"pdf", "ppt", "pptx", "documents"}:
         if normalize_bool(task.get("accessibility", False)):
-            results.append("Informe de accesibilidad")
+            results.append(labels["accessibility"])
         if normalize_bool(task.get("ocr", False)):
-            results.append("Procesamiento OCR")
+            results.append(labels["ocr"])
         if not results and output_files:
-            results.append("Archivos de resultado para descarga")
+            results.append(labels["download_files"])
     elif output_files:
-        results.append("Archivos de resultado para descarga")
+        results.append(labels["download_files"])
 
     return results
 
@@ -334,11 +580,11 @@ def read_inline_image_bytes(path: Path) -> bytes:
 
 
 def get_embedded_logo_bytes() -> bytes:
-    return read_inline_image_bytes(ALUDA_LOGO_PATH)
+    return read_inline_image_bytes(AIUDA_LOGO_PATH)
 
 
 def get_footer_image_bytes() -> bytes:
-    return read_inline_image_bytes(ALUDA_FOOTER_PATH)
+    return read_inline_image_bytes(AIUDA_FOOTER_PATH)
 
 
 def build_report_html(
@@ -348,34 +594,36 @@ def build_report_html(
     footer_cid: Optional[str] = None,
 ) -> str:
     status = task.get("status", "")
+    lang = task.get("ui_lang", "es")
+    tr = MAIL_TRANSLATIONS.get(lang, MAIL_TRANSLATIONS["es"])
 
     if status == "finished":
-        intro = "Tu solicitud en Aiuda ha finalizado correctamente."
-        status_label = "completado"
+        intro = tr["intro_finished"]
+        status_label = tr["status_finished"]
     elif status == "error":
-        intro = "Tu solicitud en Aiuda ha finalizado con error."
-        status_label = "error"
+        intro = tr["intro_error"]
+        status_label = tr["status_error"]
     else:
-        intro = "Tu solicitud en Aiuda ha cambiado de estado."
+        intro = tr["intro_other"]
         status_label = status or "-"
 
     summary_fields = [
-        ("Recurso", str(task.get("input_filename", "-"))),
-        ("Tipo", friendly_task_type(task.get("task_type", ""))),
-        ("Estado", status_label),
-        ("Fecha de finalización", format_finished_at(task.get("finished_at", ""))),
+        (tr["field_resource"], str(task.get("input_filename", "-"))),
+        (tr["field_type"], friendly_task_type(task.get("task_type", ""), lang)),
+        (tr["field_status"], status_label),
+        (tr["field_date"], format_finished_at(task.get("finished_at", ""))),
     ]
 
     if task.get("task_type", "").lower() in {"audio", "video"}:
-        summary_fields.append(("Idioma detectado", friendly_language(task.get("source_lang", ""))))
+        summary_fields.append((tr["field_source_lang"], friendly_language(task.get("source_lang", ""), lang)))
         if normalize_bool(task.get("translate", False)):
-            summary_fields.append(("Idiomas de salida", format_languages_list(task.get("target_langs", []) or [])))
+            summary_fields.append((tr["field_target_langs"], format_languages_list(task.get("target_langs", []) or [], lang)))
 
     summary_items = "".join(
         f'<tr><td style="padding:8px 0;color:#425466;font-size:14px;vertical-align:top;width:210px;"><strong>{escape(label)}</strong></td><td style="padding:8px 0;color:#12263A;font-size:14px;">{escape(value)}</td></tr>'
         for label, value in summary_fields
     )
-    
+
     notes = str(task.get("notes", "")).strip()
 
     notes_block = ""
@@ -384,7 +632,7 @@ def build_report_html(
         <tr>
         <td style="padding:18px 32px 10px 32px;">
             <div style="font-size:18px;font-weight:700;color:#12263A;margin-bottom:12px;">
-            Indicaciones adicionales
+            {escape(tr["notes_title"])}
             </div>
             <div style="padding:16px 18px;background:#F8FAFC;border:1px solid #DCE6EE;border-radius:12px;font-size:14px;line-height:1.7;color:#12263A;white-space:pre-wrap;">
             {escape(notes)}
@@ -399,14 +647,14 @@ def build_report_html(
             f'<li style="margin:0 0 8px 0;">{escape(item)}</li>' for item in generated_results
         )
     else:
-        results_html = '<li style="margin:0 0 8px 0;">Los resultados ya están disponibles para su descarga desde la plataforma.</li>'
+        results_html = f'<li style="margin:0 0 8px 0;">{escape(tr["results_default"])}</li>'
 
     error_block = ""
     if status == "error":
-        error_message = escape(str(task.get("message", "Se produjo un error durante el procesamiento.")))
+        error_message = escape(str(task.get("message", {"es": "Se produjo un error durante el procesamiento.", "gl": "Produciuse un erro durante o procesamento.", "pt": "Ocorreu um erro durante o processamento.", "en": "An error occurred during processing."}.get(lang, "Se produjo un error durante el procesamiento."))))
         error_block = f"""
         <div style="margin-top:24px;padding:16px 18px;background:#FFF4F2;border:1px solid #FFD5CC;border-radius:12px;">
-          <div style="font-size:15px;font-weight:700;color:#9F3A22;margin-bottom:8px;">Detalle del error</div>
+          <div style="font-size:15px;font-weight:700;color:#9F3A22;margin-bottom:8px;">{escape(tr["error_title"])}</div>
           <div style="font-size:14px;color:#6B2C1A;line-height:1.6;">{error_message}</div>
         </div>
         """
@@ -425,7 +673,7 @@ def build_report_html(
         )
 
     return f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="{escape(lang)}">
   <body style="margin:0;padding:0;background:#F4F7FA;font-family:Arial,Helvetica,sans-serif;color:#12263A;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{escape(intro)}</div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7FA;padding:24px 12px;">
@@ -437,45 +685,45 @@ def build_report_html(
             </tr>
             <tr>
               <td style="padding:8px 32px 8px 32px;">
-                <div style="font-size:15px;line-height:1.7;color:#425466;">Hola,</div>
+                <div style="font-size:15px;line-height:1.7;color:#425466;">{escape(tr["greeting"])}</div>
                 <div style="font-size:24px;line-height:1.35;font-weight:700;color:#12263A;margin-top:10px;">{escape(intro)}</div>
               </td>
             </tr>
             <tr>
             <td style="padding:24px 32px 10px 32px;">
-                <div style="font-size:18px;font-weight:700;color:#12263A;margin-bottom:12px;">Resumen del procesamiento</div>
+                <div style="font-size:18px;font-weight:700;color:#12263A;margin-bottom:12px;">{escape(tr["summary_title"])}</div>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">{summary_items}</table>
             </td>
             </tr>
             {notes_block}
             <tr>
             <td style="padding:18px 32px 10px 32px;">
-                <div style="font-size:18px;font-weight:700;color:#12263A;margin-bottom:12px;">Resultados generados</div>
+                <div style="font-size:18px;font-weight:700;color:#12263A;margin-bottom:12px;">{escape(tr["results_title"])}</div>
                 <ul style="padding-left:20px;margin:0;font-size:14px;line-height:1.7;color:#12263A;">{results_html}</ul>
                 {error_block}
             </td>
             </tr>
             <tr>
               <td style="padding:22px 32px 0 32px;">
-                
+
                 <div style="padding:16px 18px;background:#EEF6F7;border:1px solid #D6EAEC;border-radius:12px;font-size:14px;line-height:1.7;color:#1F4D57;">
-                  Puedes acceder ahora a los resultados desde la plataforma de Aiuda.
+                  {escape(tr["access_text"])}
                 </div>
               </td>
             </tr>
             <tr>
               <td style="padding:18px 32px 0 32px;">
-                <div style="font-size:14px;line-height:1.7;color:#425466;"><strong>ID de la tarea:</strong> {escape(str(task.get("id", "-")))}</div>
+                <div style="font-size:14px;line-height:1.7;color:#425466;"><strong>{escape(tr["task_id_label"])}</strong> {escape(str(task.get("id", "-")))}</div>
               </td>
             </tr>
             <tr>
               <td style="padding:24px 32px 18px 32px;">
-                <div style="font-size:14px;line-height:1.7;color:#425466;">Gracias por utilizar Aiuda.</div>
+                <div style="font-size:14px;line-height:1.7;color:#425466;">{escape(tr["thanks"])}</div>
               </td>
             </tr>
           </table>
           <div style="max-width:720px;padding:16px 12px 0 12px;font-size:12px;line-height:1.7;color:#6B7C93;text-align:center;">
-            {escape(ALUDA_FOOTER_TEXT)}
+            {escape(get_footer_text(lang))}
             {footer_image_html}
           </div>
         </td>
@@ -491,81 +739,83 @@ def build_report_text(
     skipped_files: Optional[List[str]] = None,
 ) -> str:
     resource_name = task.get("input_filename", "-")
-    task_type = friendly_task_type(task.get("task_type", ""))
+    task_type = friendly_task_type(task.get("task_type", ""), task.get("ui_lang", "es"))
     status = task.get("status", "")
     finished_at = format_finished_at(task.get("finished_at", ""))
-    source_lang = friendly_language(task.get("source_lang", ""))
-    target_langs = format_languages_list(task.get("target_langs", []) or [])
+    source_lang = friendly_language(task.get("source_lang", ""), task.get("ui_lang", "es"))
+    target_langs = format_languages_list(task.get("target_langs", []) or [], task.get("ui_lang", "es"))
     task_id = task.get("id", "-")
+    lang = task.get("ui_lang", "es")
+    tr = MAIL_TRANSLATIONS.get(lang, MAIL_TRANSLATIONS["es"])
 
     if status == "finished":
-        status_label = "completado"
-        intro = "Tu solicitud en Aiuda ha finalizado correctamente."
+        status_label = tr["status_finished"]
+        intro = tr["intro_finished"]
     elif status == "error":
-        status_label = "error"
-        intro = "Tu solicitud en Aiuda ha finalizado con error."
+        status_label = tr["status_error"]
+        intro = tr["intro_error"]
     else:
         status_label = status or "-"
-        intro = "Tu solicitud en Aiuda ha cambiado de estado."
+        intro = tr["intro_other"]
 
     generated_results = infer_generated_results(task, output_files)
 
     lines = [
-        "Hola,",
+        tr["greeting"],
         "",
         intro,
         "",
-        "Resumen del procesamiento",
-        f"- Recurso: {resource_name}",
-        f"- Tipo: {task_type}",
-        f"- Estado: {status_label}",
-        f"- Fecha de finalización: {finished_at}",
+        tr["summary_title"],
+        f"- {tr['field_resource']} {resource_name}",
+        f"- {tr['field_type']} {task_type}",
+        f"- {tr['field_status']} {status_label}",
+        f"- {tr['field_date']} {finished_at}",
     ]
 
     if task.get("task_type", "").lower() in {"audio", "video"}:
-        lines.append(f"- Idioma detectado: {source_lang}")
+        lines.append(f"- {tr['field_source_lang']} {source_lang}")
         if normalize_bool(task.get("translate", False)):
-            lines.append(f"- Idiomas de salida: {target_langs}")
+            lines.append(f"- {tr['field_target_langs']} {target_langs}")
 
-        notes = str(task.get("notes", "")).strip()
-        if notes:
-            lines.extend([
-                "",
-                "Indicaciones adicionales",
-                notes,
-            ])
+    notes = str(task.get("notes", "")).strip()
+    if notes:
+        lines.extend([
+            "",
+            tr["notes_title"],
+            notes,
+        ])
 
     lines.extend([
         "",
-        "Resultados generados",
+        tr["results_title"],
     ])
 
     if generated_results:
         for item in generated_results:
             lines.append(f"- {item}")
     else:
-        lines.append("- Los resultados ya están disponibles para su descarga desde la plataforma.")
+        lines.append(f"- {tr['results_default']}")
 
     lines.extend([
         "",
-        "Puedes acceder ahora a los resultados desde la plataforma de Aiuda.",
+        tr["access_text"],
         "",
-        f"ID de la tarea: {task_id}",
+        f"{tr['task_id_label']} {task_id}",
     ])
 
     if status == "error":
-        error_message = str(task.get("message", "Se produjo un error durante el procesamiento."))
+        error_message = str(task.get("message", {"es": "Se produjo un error durante el procesamiento.", "gl": "Produciuse un erro durante o procesamento.", "pt": "Ocorreu um erro durante o processamento.", "en": "An error occurred during processing."}.get(lang, "Se produjo un error durante el procesamiento.")))
         lines.extend([
             "",
-            "Detalle del error",
+            tr["error_title"],
             f"- {error_message}",
         ])
 
     lines.extend([
         "",
-        "Gracias por utilizar Aiuda.",
+        tr["thanks"],
         "",
-        ALUDA_FOOTER_TEXT,
+        get_footer_text(lang),
     ])
 
     return "\n".join(lines)
@@ -576,7 +826,7 @@ def write_task_report_file(task_id: str) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_files = list_task_outputs(output_dir)
-    report_path = output_dir / "ALUDA_report.txt"
+    report_path = output_dir / "AIUDA_report.txt"
     report_text = build_report_text(task, output_files)
     report_path.write_text(report_text, encoding="utf-8")
     return report_path
@@ -584,6 +834,8 @@ def write_task_report_file(task_id: str) -> Path:
 
 def send_task_email(task_id: str) -> None:
     task = get_task(task_id)
+    lang = task.get("ui_lang", "es")
+    tr = MAIL_TRANSLATIONS.get(lang, MAIL_TRANSLATIONS["es"])
 
     notify_email = normalize_bool(task.get("notify_email", False))
     recipient = (task.get("email") or "").strip()
@@ -601,7 +853,7 @@ def send_task_email(task_id: str) -> None:
         update_task(
             task_id,
             notification_status="error",
-            notification_error="SMTP no configurado. Revisa ALUDA_SMTP_HOST / ALUDA_SMTP_FROM.",
+            notification_error="SMTP no configurado. Revisa AIUDA_SMTP_HOST / AIUDA_SMTP_FROM.",
             updated_at=now_iso(),
         )
         return
@@ -611,16 +863,16 @@ def send_task_email(task_id: str) -> None:
     output_files = list_task_outputs(output_dir)
 
     subject_status = (
-        "Proceso completado"
+        tr["subject_finished"]
         if task.get("status") == "finished"
-        else "Proceso con error"
+        else tr["subject_error"]
     )
     subject = f"Aiuda | {subject_status} | {task.get('input_filename', 'recurso')}"
 
     body_text = build_report_text(task, output_files)
-    logo_cid = make_msgid(domain="aluda.local")
+    logo_cid = make_msgid(domain="aiuda.local")
     logo_ref = logo_cid[1:-1]
-    footer_cid = make_msgid(domain="aluda.local")
+    footer_cid = make_msgid(domain="aiuda.local")
     footer_ref = footer_cid[1:-1]
     body_html = build_report_html(task, output_files, logo_cid=logo_ref, footer_cid=footer_ref)
 
@@ -637,7 +889,7 @@ def send_task_email(task_id: str) -> None:
             maintype="image",
             subtype="png",
             cid=logo_cid,
-            filename=ALUDA_LOGO_PATH.name,
+            filename=AIUDA_LOGO_PATH.name,
             disposition="inline",
         )
         msg.get_payload()[-1].add_related(
@@ -645,7 +897,7 @@ def send_task_email(task_id: str) -> None:
             maintype="image",
             subtype="png",
             cid=footer_cid,
-            filename=ALUDA_FOOTER_PATH.name,
+            filename=AIUDA_FOOTER_PATH.name,
             disposition="inline",
         )
     except Exception:
@@ -1047,7 +1299,7 @@ def on_startup() -> None:
 
 @app.get("/api/health")
 def health() -> Dict[str, Any]:
-    return {"ok": True, "service": "aluda-backend", "time": now_iso()}
+    return {"ok": True, "service": "aiuda-backend", "time": now_iso()}
 
 
 @app.get("/api/tasks", response_model=TaskListResponse)
@@ -1100,6 +1352,7 @@ async def create_task(
     ocr: str = Form("false"),
     source_lang: str = Form("auto"),
     target_langs: str = Form(""),
+    ui_lang: str = Form("es"),
 ) -> Dict[str, Any]:
     task_type = infer_task_type_from_upload(
         task_type=task_type,
@@ -1147,6 +1400,7 @@ async def create_task(
         "ocr": normalize_bool(ocr),
         "source_lang": (source_lang or "auto").strip().lower(),
         "target_langs": targets,
+        "ui_lang": ui_lang if ui_lang in ("es", "gl", "pt", "en") else "es",
         "input_filename": safe_name,
         "input_file": str(input_path),
         "output_dir": str(task_dir),
@@ -1209,11 +1463,11 @@ def delete_task(task_id: str) -> Dict[str, Any]:
 @app.get("/api/debug/smtp")
 def debug_smtp():
     return {
-        "smtp_host": os.getenv("ALUDA_SMTP_HOST", ""),
-        "smtp_port": os.getenv("ALUDA_SMTP_PORT", ""),
-        "smtp_user": os.getenv("ALUDA_SMTP_USER", ""),
-        "smtp_from": os.getenv("ALUDA_SMTP_FROM", ""),
-        "smtp_security": os.getenv("ALUDA_SMTP_SECURITY", ""),
-        "smtp_password_loaded": bool(os.getenv("ALUDA_SMTP_PASSWORD", "")),
-        "smtp_password_len": len(os.getenv("ALUDA_SMTP_PASSWORD", "")),
+        "smtp_host": os.getenv("AIUDA_SMTP_HOST", ""),
+        "smtp_port": os.getenv("AIUDA_SMTP_PORT", ""),
+        "smtp_user": os.getenv("AIUDA_SMTP_USER", ""),
+        "smtp_from": os.getenv("AIUDA_SMTP_FROM", ""),
+        "smtp_security": os.getenv("AIUDA_SMTP_SECURITY", ""),
+        "smtp_password_loaded": bool(os.getenv("AIUDA_SMTP_PASSWORD", "")),
+        "smtp_password_len": len(os.getenv("AIUDA_SMTP_PASSWORD", "")),
     }

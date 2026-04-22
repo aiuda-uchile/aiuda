@@ -1,1 +1,1 @@
-"""Top-level source package for ALUDA."""
+"""Top-level source package for AIUDA."""

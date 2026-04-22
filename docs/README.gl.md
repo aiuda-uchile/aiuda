@@ -1,6 +1,6 @@
-# ALUDA
+# AIUDA
 
-**ALUDA** é unha plataforma impulsada por IA, despregada localmente, deseñada para apoiar o traballo académico sen substituilo, mellorando a accesibilidade, a inclusión e a calidade do contido.
+**AIUDA** é unha plataforma impulsada por IA, despregada localmente, deseñada para apoiar o traballo académico sen substituilo, mellorando a accesibilidade, a inclusión e a calidade do contido.
 
 Ofrece ferramentas para **transcribir, subtitular, traducir e analizar materiais audiovisuais e escritos**, garantindo que todos os datos se procesen de forma segura dentro da infraestrutura institucional.
 
@@ -121,7 +121,7 @@ cp .env.example .env
 2. Edita `.env` e configura as variables requiridas:
 
 ```bash
-ALUDA_SMTP_PASSWORD=o_teu_contrasinal_aqui
+AIUDA_SMTP_PASSWORD=o_teu_contrasinal_aqui
 ```
 
 3. Inicia a aplicación:
@@ -153,7 +153,7 @@ docker compose down
 ```
 src/
   backend/
-    aluda_backend_fastapi.py	# API principal
+    aiuda_backend_fastapi.py	# API principal
     scripts/			# Lóxica de procesamento
   frontend/			# Aplicación React
 jobs/				# Datos e saídas de tarefas

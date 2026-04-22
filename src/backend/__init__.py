@@ -1,1 +1,1 @@
-"""Backend package for ALUDA."""
+"""Backend package for AIUDA."""

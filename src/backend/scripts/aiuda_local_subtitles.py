@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-ALUDA - Subtitulado automático local de clases grabadas
+AIUDA - Subtitulado automático local de clases grabadas
 -------------------------------------------------------
 Script local para:
 - Procesar vídeo o audio
@@ -15,10 +15,10 @@ Script local para:
 - Opcionalmente incrustar subtítulos en un MP4 usando ffmpeg
 
 Uso:
-    python aluda_local_subtitles.py input.mp4 -o output
-    python aluda_local_subtitles.py input.mp4 -o output --device cuda --compute-type float16
-    python aluda_local_subtitles.py input.mp4 -o output --device cpu --compute-type int8
-    python aluda_local_subtitles.py input.mp4 -o output --burn-subtitles
+    python aiuda_local_subtitles.py input.mp4 -o output
+    python aiuda_local_subtitles.py input.mp4 -o output --device cuda --compute-type float16
+    python aiuda_local_subtitles.py input.mp4 -o output --device cpu --compute-type int8
+    python aiuda_local_subtitles.py input.mp4 -o output --burn-subtitles
 
 Dependencias:
     pip install faster-whisper
@@ -251,7 +251,7 @@ def build_json_payload(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Subtitulado automático local para ALUDA usando faster-whisper."
+        description="Subtitulado automático local para AIUDA usando faster-whisper."
     )
     parser.add_argument(
         "input_file",
@@ -261,7 +261,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-o", "--output-dir",
         type=str,
-        default="output_aluda",
+        default="output_aiuda",
         help="Directorio de salida."
     )
     parser.add_argument(
