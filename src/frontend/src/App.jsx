@@ -50,7 +50,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { header } from "framer-motion/client"
+import { div, header, p } from "framer-motion/client"
 
 import { useI18n } from "./i18n/i18n"
 import MetricCard from "./components/scripts/MetricCard"
@@ -117,7 +117,7 @@ function formatDate(value) {
 
 function getTaskTypeLabel(taskType) {
   if (taskType === "audio") return "Audio"
-  if (taskType === "video") return "video"
+  if (taskType === "video") return "Video"
   if (taskType === "documents") return "Documentos"
   return taskType || "Tarea"
 }
@@ -785,8 +785,7 @@ export default function App() {
     }, 100)
     }
   }, [])
-  
-  
+
   function toggleProfile() {
     setProfile((prev) =>
       prev === "teacher" ? "technical" : "teacher"
@@ -2337,7 +2336,7 @@ export default function App() {
                         </video>
 
                         <div className="mt-3 flex items-center justify-between gap-3">
-                          <p className="text-xs text-slate-500">
+                          <p className="text-sm text-slate-500">
                             {selectedTaskCurrentJsonFile
                               ? `${t("subtitle-show")} ${selectedTaskCurrentDownloadMeta.label}.`
                               : "Vídeo con subtítulos incrustados."}
