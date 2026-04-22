@@ -22,7 +22,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
 
 
-APP_NAME = "ALUDA Audio Pipeline"
+APP_NAME = "AIUDA Audio Pipeline"
 DEFAULT_WHISPER_MODEL = "small"
 DEFAULT_TRANSLATION_MODEL = "facebook/nllb-200-distilled-600M"
 
@@ -39,7 +39,7 @@ ALLOWED_TARGETS = {"es", "en", "pt", "gl"}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="ALUDA - transcripción y traducción de audio para backend"
+        description="AIUDA - transcripción y traducción de audio para backend"
     )
     parser.add_argument("input_file", type=str, help="Archivo de audio de entrada")
     parser.add_argument(
@@ -161,7 +161,7 @@ def collect_output_filenames(output_dir: Path) -> List[str]:
 
 
 def build_logger(output_dir: Path) -> logging.Logger:
-    logger = logging.getLogger("aluda_audio")
+    logger = logging.getLogger("aiuda_audio")
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
 

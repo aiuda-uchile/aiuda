@@ -1,6 +1,6 @@
-# ALUDA
+# AIUDA
 
-**ALUDA** is a locally deployed AI-powered platform designed to support academic work, without replacing it, by improving accessibility, inclusivity, and content quality.
+**AIUDA** is a locally deployed AI-powered platform designed to support academic work, without replacing it, by improving accessibility, inclusivity, and content quality.
 
 It provides tools to **transcribe, subtitle, translate, and analyze audiovisual and written materials**, while ensuring that all data is processed securely within institutional infrastructure.
 
@@ -128,7 +128,7 @@ cp .env.example .env
 2. Edit `.env` and configure required variables:
 
 ```bash
-ALUDA_SMTP_PASSWORD=your_password_here
+AIUDA_SMTP_PASSWORD=your_password_here
 ```
 
 3. Start the application:
@@ -141,9 +141,9 @@ docker compose up --build
 
 ## 🌐 Available Services
 
-- Backend health: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
-- API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- Frontend: [http://localhost:5173](http://127.0.0.1:8000/docs)
+- Backend health: [http://127.0.0.1:8010/api/health](http://127.0.0.1:8010/api/health)
+- API docs: [http://127.0.0.1:8010/docs](http://127.0.0.1:8010/docs)
+- Frontend: [http://localhost:5173](http://localhost:5173)
 
 ---
 
@@ -160,7 +160,7 @@ docker compose down
 ```
 src/
   backend/
-    aluda_backend_fastapi.py	# Main API
+    aiuda_backend_fastapi.py	# Main API
     scripts/			# Processing logic
   frontend/			# React App
 jobs/				# Task data & Outputs

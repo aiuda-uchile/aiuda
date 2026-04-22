@@ -69,7 +69,7 @@ _TRANSLATION_BACKEND = None
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="ALUDA - extracción y traducción local de documentos/presentaciones"
+        description="AIUDA - extracción y traducción local de documentos/presentaciones"
     )
     parser.add_argument(
         "input_path",
@@ -80,7 +80,7 @@ def parse_args() -> argparse.Namespace:
         "-o",
         "--output-dir",
         type=str,
-        default="output_aluda_docs",
+        default="output_aiuda_docs",
         help="Directorio de salida",
     )
     parser.add_argument(

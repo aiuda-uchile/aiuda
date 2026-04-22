@@ -3,33 +3,36 @@ services:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
-    container_name: aluda-backend
+    container_name: aiuda-backend
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     user: "root"
     working_dir: /workspace
-    command: micromamba run -n aluda-whisper uvicorn src.backend.aluda_backend_fastapi:app --host 0.0.0.0 --port 8000 --reload
+    command: micromamba run -n aiuda-whisper uvicorn src.backend.aiuda_backend_fastapi:app --host 0.0.0.0 --port 8010 --reload
     ports:
-      - "8000:8000"
+      - "${BACKEND_HOST_PORT:-8010}:8010"
     volumes:
       - ./:/workspace
     environment:
       - PYTHONUNBUFFERED=1
-      - ALUDA_SMTP_HOST=${ALUDA_SMTP_HOST:-}
-      - ALUDA_SMTP_PORT=${ALUDA_SMTP_PORT:-587}
-      - ALUDA_SMTP_USER=${ALUDA_SMTP_USER:-}
-      - ALUDA_SMTP_PASSWORD=${ALUDA_SMTP_PASSWORD:-}
-      - ALUDA_SMTP_FROM=${ALUDA_SMTP_FROM:-}
-      - ALUDA_SMTP_SECURITY=${ALUDA_SMTP_SECURITY:-tls}
-      - ALUDA_MAX_EMAIL_ATTACH_MB=${ALUDA_MAX_EMAIL_ATTACH_MB:-20}
+      - AIUDA_SMTP_HOST=${AIUDA_SMTP_HOST:-}
+      - AIUDA_SMTP_PORT=${AIUDA_SMTP_PORT:-587}
+      - AIUDA_SMTP_USER=${AIUDA_SMTP_USER:-}
+      - AIUDA_SMTP_PASSWORD=${AIUDA_SMTP_PASSWORD:-}
+      - AIUDA_SMTP_FROM=${AIUDA_SMTP_FROM:-}
+      - AIUDA_SMTP_SECURITY=${AIUDA_SMTP_SECURITY:-tls}
+      - AIUDA_MAX_EMAIL_ATTACH_MB=${AIUDA_MAX_EMAIL_ATTACH_MB:-20}
 
   frontend:
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
-    container_name: aluda-frontend
+    container_name: aiuda-frontend
     working_dir: /workspace/src/frontend
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     environment:
-      - VITE_API_PROXY_TARGET=http://backend:8000
+      - VITE_API_PROXY_TARGET=http://backend:8010
     ports:
       - "5173:5173"
     volumes:

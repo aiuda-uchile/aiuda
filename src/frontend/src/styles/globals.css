@@ -114,6 +114,28 @@ nav button.active, nav a.active{
 .stroke-process-2{
     stroke: var(--color-process-2);
 }
+.wp-95{
+    max-width: 95%!important;
+}
+.list li{
+    list-style: circle;
+    margin: 0.5em 0em 0.5em 1.5em;
+}
+.video-container{
+    max-height: 300px;
+}
+.xl\:grid-cols-5 {
+    @media (width >= 70rem) {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+}
+.border-primary.intro{
+    border: 3px solid var(--color-primary-1);
+}
+.features h4.text-base{
+    font-size: 0.95em!important;
+    margin-top: 0.25em;
+}
 /*--INTRO--*/
 .lang{
     font-weight: 600;
@@ -127,6 +149,10 @@ nav button.active, nav a.active{
     margin: auto;
     margin-bottom: 0.5em;
     background-color: var(--color-grey-1);
+}
+.features .text-base{
+    line-height: 1.1em;
+    font-size: 1em!important;
 }
 /*--FOOTER--*/
 footer h4{

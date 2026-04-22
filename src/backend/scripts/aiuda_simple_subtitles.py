@@ -78,7 +78,7 @@ def incrustar_subtitulos(video_entrada: Path, srt: Path, video_salida: Path) -> 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Vídeo o audio de entrada")
-    parser.add_argument("-o", "--output-dir", default="output_aluda", help="Output directory")
+    parser.add_argument("-o", "--output-dir", default="output_aiuda", help="Output directory")
     parser.add_argument("--model", default="small", help="Modelo: tiny, base, small, medium, large-v3, turbo...")
     parser.add_argument("--device", default="cpu", choices=["cpu", "cuda", "auto"])
     parser.add_argument("--compute-type", default="int8", help="Ej: int8, float16, float32")
