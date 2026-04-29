@@ -27,6 +27,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel
 
+# Modelos en memoria
+from aluda_model_manager import model_manager
+
+# Pipelines (importados para llamada directa sin subproceso)
+from scripts.aluda_audio_pipeline import process_audio
+from scripts.aluda_video_pipeline import process_video
+from scripts.aluda_docs_pipeline import process_document
 
 # =========================================================
 # CONFIG
@@ -71,9 +78,6 @@ AIUDA_FOOTER_TEXT = (
     "la Universidad Tecnológica del Uruguay, la Universidad de Buenos Aires y la Universidade "
     "Federal do Rio de Janeiro, con el apoyo de AECID."
 )
-
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-os.environ.setdefault("OMP_NUM_THREADS", "4")
 
 
 # =========================================================
@@ -846,48 +850,73 @@ def build_commands(task: Dict[str, Any]) -> List[List[str]]:
     raise RuntimeError(f"Tipo de tarea no soportado: {task_type}")
 
 
-def run_one_command(
-    task_id: str,
-    cmd: List[str],
-    log_path: Path,
-    global_log_path: Optional[Path] = None,
-) -> int:
-    with open(log_path, "a", encoding="utf-8") as log_file:
-        log_file.write(f"\n\n===== {now_iso()} =====\n")
-        log_file.write("CMD: " + " ".join(cmd) + "\n\n")
-        log_file.flush()
+def run_task_inprocess(task: Dict[str, Any]) -> None:
+    """Ejecuta el pipeline correspondiente en el mismo proceso, usando los modelos en memoria."""
+    task_type = task["task_type"]
+    input_file = Path(task["input_file"])
+    output_dir = Path(task["output_dir"])
+    task_id = task["id"]
+    source_lang = task.get("source_lang") or None
+    target_langs = task["target_langs"] if task.get("translate", True) else []
+    use_ocr = normalize_bool(task.get("ocr", False))
 
-        proc = subprocess.Popen(
-            cmd,
-            cwd=str(BASE_DIR),
-            stdout=log_file,
-            stderr=log_file,
-            text=True,
-            env={**os.environ, "CUDA_VISIBLE_DEVICES": ""},
+    # Valores por defecto usados anteriormente en la CLI
+    whisper_model_name = "small"
+    beam_size = 5
+    compute_type = "int8"
+    max_translation_chars = 800
+
+    whisper = model_manager.whisper_model if model_manager.loaded else None
+    nllb = model_manager.nllb_translator if model_manager.loaded else None
+
+    if task_type == "audio":
+        rc = process_audio(
+            input_file=input_file,
+            output_dir=output_dir,
+            task_id=task_id,
+            source_lang=source_lang if source_lang != "auto" else None,
+            target_langs=target_langs,
+            whisper_model=whisper_model_name,
+            beam_size=beam_size,
+            compute_type=compute_type,
+            max_translation_chars=max_translation_chars,
+            preloaded_whisper=whisper,
+            preloaded_nllb=nllb,
         )
 
-        while proc.poll() is None:
-            try:
-                refresh_task_from_status(task_id)
-            except Exception:
-                pass
-            time.sleep(1)
+    elif task_type == "video":
+        rc = process_video(
+            input_file=input_file,
+            output_dir=output_dir,
+            task_id=task_id,
+            source_lang=source_lang if source_lang != "auto" else None,
+            target_langs=target_langs,
+            whisper_model=whisper_model_name,
+            beam_size=beam_size,
+            compute_type=compute_type,
+            max_translation_chars=max_translation_chars,
+            burn_subtitles=True,
+            preloaded_whisper=whisper,
+            preloaded_nllb=nllb,
+        )
 
-        rc = proc.wait()
+    elif task_type == "documents":
+        rc = process_document(
+            input_file=input_file,
+            output_dir=output_dir,
+            task_id=task_id,
+            source_lang=source_lang if source_lang != "auto" else None,
+            target_langs=target_langs,
+            use_ocr=use_ocr,
+            max_translation_chars=max_translation_chars,
+            preloaded_nllb=nllb,
+        )
 
-    try:
-        refresh_task_from_status(task_id)
-    except Exception:
-        pass
+    else:
+        raise RuntimeError(f"Tipo de tarea no soportado: {task_type}")
 
-    if global_log_path is not None:
-        try:
-            global_log_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(log_path, global_log_path)
-        except Exception:
-            pass
-
-    return rc
+    if rc != 0:
+        raise RuntimeError(f"El pipeline devolvió código de error {rc}")
 
 
 def task_worker() -> None:
@@ -898,8 +927,6 @@ def task_worker() -> None:
             task = get_task(task_id)
             output_dir = Path(task["output_dir"])
             output_dir.mkdir(parents=True, exist_ok=True)
-            log_path = output_dir / "backend_runner.log"
-            global_log_path = LOGS_DIR / f"{task_id}.log"
 
             update_task(
                 task_id,
@@ -911,25 +938,9 @@ def task_worker() -> None:
                 updated_at=now_iso(),
             )
 
-            commands = build_commands(task)
-            total_cmds = len(commands)
-
-            for i, cmd in enumerate(commands, start=1):
-                update_task(
-                    task_id,
-                    status="processing",
-                    progress=max(5, int((i - 1) / max(total_cmds, 1) * 100)),
-                    current_stage=f"engine_step_{i}",
-                    message=f"Ejecutando paso {i}/{total_cmds}",
-                    updated_at=now_iso(),
-                )
-
-                rc = run_one_command(task_id, cmd, log_path, global_log_path)
-                if rc != 0:
-                    raise RuntimeError(f"El proceso devolvió código {rc}")
+            run_task_inprocess(task)
 
             output_files = list_task_outputs(output_dir)
-
             task = get_task(task_id)
 
             update_task(
@@ -1039,6 +1050,8 @@ def on_startup() -> None:
     load_tasks()
     start_worker_once()
     requeue_pending_tasks()
+    # Cargar modelos en memoria una sola vez
+    threading.Thread(target=model_manager.load, daemon=True).start()
 
 
 # =========================================================
@@ -1048,6 +1061,16 @@ def on_startup() -> None:
 @app.get("/api/health")
 def health() -> Dict[str, Any]:
     return {"ok": True, "service": "aiuda-backend", "time": now_iso()}
+
+
+@app.get("/api/models/status")
+def models_status() -> Dict[str, Any]:
+    return {
+        "loaded": model_manager.loaded,
+        "device": model_manager.device,
+        "whisper": model_manager.whisper_model is not None,
+        "nllb": model_manager.nllb_translator is not None,
+    }
 
 
 @app.get("/api/tasks", response_model=TaskListResponse)

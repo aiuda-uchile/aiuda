@@ -1,0 +1,28 @@
+# docker-compose.override.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# Configuración LOCAL de infraestructura — NO subir al repositorio.
+# Este archivo es ignorado por git (.gitignore).
+#
+# Copiá este archivo y completá con los valores de tu entorno:
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# Docker Compose lo aplica automáticamente sobre docker-compose.yml.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  backend:
+    environment:
+      # Proxy corporativo o institucional (dejá vacío si no tenés)
+      - HTTP_PROXY=http://tu-proxy:8080
+      - HTTPS_PROXY=http://tu-proxy:8080
+      - NO_PROXY=localhost,127.0.0.1,backend,aluda-backend,aluda-frontend,172.0.0.0/8
+
+  frontend:
+    environment:
+      # Proxy corporativo o institucional (dejá vacío si no tenés)
+      - HTTP_PROXY=http://tu-proxy:8080
+      - HTTPS_PROXY=http://tu-proxy:8080
+      - NO_PROXY=localhost,127.0.0.1,backend,aluda-backend,172.0.0.0/8
+      # Host(s) permitidos para el servidor de desarrollo de Vite
+      # Ejemplo: VITE_ALLOWED_HOSTS=mi-servidor.ejemplo.com
+      - VITE_ALLOWED_HOSTS=
