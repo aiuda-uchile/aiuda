@@ -12,14 +12,23 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-# Forzar CPU para evitar problemas con CUDA en GPUs antiguas
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-os.environ.setdefault("OMP_NUM_THREADS", "4")
+import multiprocessing
+
+# Detectar dispositivo óptimo: GPU si está disponible, CPU con todos los cores si no
+os.environ.setdefault("OMP_NUM_THREADS", str(multiprocessing.cpu_count()))
+_CPU_CORES = multiprocessing.cpu_count()
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 from faster_whisper import WhisperModel
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
+
+
+def _detect_device() -> tuple[str, str, int]:
+    """Devuelve (device, compute_type, cpu_threads) según el hardware disponible."""
+    if torch.cuda.is_available():
+        return "cuda", "float16", 0
+    return "cpu", "int8", _CPU_CORES
 
 
 APP_NAME = "AIUDA Audio Pipeline"
@@ -295,13 +304,15 @@ def transcribe_audio(
     source_lang: Optional[str],
     logger: logging.Logger,
 ) -> Tuple[List[dict], dict]:
-    logger.info("Cargando modelo Whisper en CPU: %s", model_name)
+    _device, _compute_type, _cpu_threads = _detect_device()
+    _effective_compute = compute_type if compute_type != "int8" else _compute_type
+    logger.info("Cargando modelo Whisper en %s (compute=%s, threads=%s): %s", _device.upper(), _effective_compute, _cpu_threads or "n/a", model_name)
 
     model = WhisperModel(
         model_name,
-        device="cpu",
-        compute_type=compute_type,
-        cpu_threads=4,
+        device=_device,
+        compute_type=_effective_compute,
+        cpu_threads=_cpu_threads if _device == "cpu" else 0,
     )
 
     logger.info("Iniciando transcripción de %s", input_file.name)
@@ -454,7 +465,7 @@ def process_audio(
         input_file=input_file,
         model_name=whisper_model,
         beam_size=beam_size,
-        compute_type=compute_type,
+        compute_type=_effective_compute,
         source_lang=manual_source_lang,
         logger=logger,
     )
