@@ -19,9 +19,12 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-os.environ.setdefault("OMP_NUM_THREADS", "4")
+import multiprocessing
+
+# Detectar dispositivo óptimo: GPU si está disponible, CPU con todos los cores si no
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+_CPU_CORES = multiprocessing.cpu_count()
+os.environ.setdefault("OMP_NUM_THREADS", str(_CPU_CORES))
 
 APP_NAME = "AIUDA Docs Pipeline"
 DEFAULT_TRANSLATION_MODEL = "facebook/nllb-200-distilled-600M"
@@ -1052,15 +1055,25 @@ class NllbTranslator:
         import torch
 
         self.torch = torch
+
+        # Detectar dispositivo óptimo
+        if torch.cuda.is_available():
+            self.device = "cuda"
+            torch_threads = 0
+        else:
+            self.device = "cpu"
+            torch_threads = _CPU_CORES
+
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-        self.model.to("cpu")
+        self.model.to(self.device)
         self.model.eval()
 
-        try:
-            torch.set_num_threads(4)
-        except Exception:
-            pass
+        if self.device == "cpu":
+            try:
+                torch.set_num_threads(torch_threads)
+            except Exception:
+                pass
 
     def translate_text(self, text: str, src_code: str, tgt_code: str, max_chars: int = 800) -> str:
         text = normalize_whitespace(text)
@@ -1080,6 +1093,7 @@ class NllbTranslator:
         for chunk in chunks:
             self.tokenizer.src_lang = src_nllb
             inputs = self.tokenizer(chunk, return_tensors="pt", truncation=True, padding=True)
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
             with self.torch.no_grad():
                 generated = self.model.generate(
                     **inputs,
