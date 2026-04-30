@@ -2707,7 +2707,7 @@ export default function App() {
                           onClick={() => toggleLog(selectedTask.id)}
                           disabled={loadingLogId === selectedTask.id}
                         >
-                          {showLogByTask[selectedTask.id] ? t("show") : t("hide")}
+                          {showLogByTask[selectedTask.id] ? t("hide") : t("show")}
                         </Button>
                       </div>
                     </div>

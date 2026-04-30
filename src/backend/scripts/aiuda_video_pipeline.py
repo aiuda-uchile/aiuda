@@ -597,6 +597,8 @@ def process_video(
         message="Transcribiendo vídeo",
     )
 
+    _device, _compute_type, _cpu_threads = _detect_device()
+    _effective_compute = compute_type if compute_type != "int8" else _compute_type
     segments, info = transcribe_video(
         input_file=input_file,
         model_name=whisper_model,

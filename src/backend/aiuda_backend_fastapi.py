@@ -1115,7 +1115,7 @@ def run_one_command(
             stdout=log_file,
             stderr=log_file,
             text=True,
-            env={**os.environ, "CUDA_VISIBLE_DEVICES": ""},
+            env=os.environ,
         )
 
         while proc.poll() is None:
