@@ -41,7 +41,7 @@ LOGS_DIR = PROJECT_DIR / "logs"
 
 AUDIO_SCRIPT = BASE_DIR / "scripts" / "aiuda_audio_pipeline.py"
 VIDEO_SCRIPT = BASE_DIR / "scripts" / "aiuda_video_pipeline.py"
-DOCS_SCRIPT = BASE_DIR / "scripts" / "aiuda_docs_pipeline.py"
+DOCS_SCRIPT = BASE_DIR / "scripts" / "aiuda_docs_pipeline_compatible.py"
 
 DEFAULT_AUDIO_TARGETS = ["es", "en", "pt", "gl"]
 DEFAULT_VIDEO_TARGETS = ["es", "en", "pt", "gl"]
