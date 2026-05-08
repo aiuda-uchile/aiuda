@@ -1,35 +1,35 @@
 # AIUDA
 
-**AIUDA** e uma plataforma com IA, implantada localmente, projetada para apoiar o trabalho academico sem substitui-lo, melhorando a acessibilidade, a inclusao e a qualidade do conteudo.
+**AIUDA** é uma plataforma com IA, implantada localmente, projetada para apoiar o trabalho acadêmico sem substituí-lo, melhorando a acessibilidade, a inclusão e a qualidade do conteúdo.
 
-Ela fornece ferramentas para **transcrever, legendar, traduzir e analisar materiais audiovisuais e escritos**, garantindo que todos os dados sejam processados com seguranca dentro da infraestrutura institucional.
+Ela fornece ferramentas para **transcrever, legendar, traduzir e analisar materiais audiovisuais e escritos**, garantindo que todos os dados sejam processados com segurança dentro da infraestrutura institucional.
 
 ---
 
 ## ✨ Funcionalidades
 
-- 🎧 **Processamento de Audio e Video**
+- 🎧 **Processamento de Áudio e Vídeo**
 
-  - Transcricao e legendagem automaticas
-  - Traducao de conteudo multimidia
-- 📄 **Analise de Documentos e Apresentacoes**
+  - Transcrição e legendagem automáticas
+  - Tradução de conteúdo multimídia
+- 📄 **Análise de Documentos e Apresentações**
 
   - Detecta problemas de legibilidade (por exemplo, tamanhos de fonte pequenos, texto muito longo)
-  - Identifica problemas de acessibilidade (por exemplo, contraste de cores para pessoas daltonicas)
-  - Destaca problemas basicos de escrita e sugere melhorias
+  - Identifica problemas de acessibilidade (por exemplo, contraste de cores para pessoas daltônicas)
+  - Destaca problemas básicos de escrita e sugere melhorias
 - 🔒 **Foco em Privacidade**
 
   - Todo o processamento acontece localmente em servidores institucionais
   - Nenhum dado e enviado para plataformas comerciais externas
-- ♿ **Acessibilidade e Inclusao**
+- ♿ **Acessibilidade e Inclusão**
 
   - Projetada para apoiar diversas necessidades de aprendizagem
-  - Ajuda a criar materiais academicos mais inclusivos
-- 🧩 **Aberta e Replicavel**
+  - Ajuda a criar materiais acadêmicos mais inclusivos
+- 🧩 **Aberta e Replicável**
 
-  - Construida com ferramentas e modelos de codigo aberto
+  - Construída com ferramentas e modelos de código aberto
   - Pode ser implantada em universidades, faculdades ou centros de pesquisa
-  - Utilizavel por usuarios nao especialistas
+  - Utilizável por usuários não especialistas
 
 ---
 
@@ -37,18 +37,18 @@ Ela fornece ferramentas para **transcrever, legendar, traduzir e analisar materi
 
 - **Backend:** FastAPI
 - **Frontend:** React (Vite)
-- **Implantacao:** Docker
+- **Implantação:** Docker
 
 ---
 
-## 🐳 Instalacao do Docker
+## 🐳 Instalação do Docker
 
 ### Windows
 
 1. Baixe o Docker Desktop: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 2. Execute o instalador e habilite o WSL 2 (recomendado)
 3. Reinicie o computador
-4. Verifique a instalacao:
+4. Verifique a instalação:
 
 ```bash
 docker --version
@@ -59,7 +59,7 @@ docker compose version
 
 ### Linux (Ubuntu/Debian)
 
-1. Adicione o repositorio do Docker:
+1. Adicione o repositório do Docker:
 
 ```bash
 sudo apt-get update
@@ -118,13 +118,13 @@ Na raiz do projeto:
 cp .env.example .env
 ```
 
-2. Edite o `.env` e configure as variaveis obrigatorias:
+2. Edite o `.env` e configure as variáveis obrigatórias:
 
 ```bash
 AIUDA_SMTP_PASSWORD=sua_senha_aqui
 ```
 
-3. Inicie a aplicacao:
+3. Inicie a aplicação:
 
 ```bash
 docker compose up --build
@@ -132,7 +132,7 @@ docker compose up --build
 
 ---
 
-## 🌐 Servicos Disponiveis
+## 🌐 Serviços Disponíveis
 
 - Saude do backend: [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
 - Documentacao da API: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
@@ -140,7 +140,7 @@ docker compose up --build
 
 ---
 
-## 🛑 Parando a Aplicacao
+## 🛑 Parando a Aplicação
 
 ```bash
 docker compose down
@@ -154,15 +154,15 @@ docker compose down
 src/
   backend/
     aiuda_backend_fastapi.py	# API principal
-    scripts/			# Logica de processamento
-  frontend/			# Aplicacao React
-jobs/				# Dados e saidas de tarefas
+    scripts/			# Lógica de processamento
+  frontend/			# Aplicação React
+jobs/				# Dados e saídas de tarefas
 logs/				# Logs por tarefa
 ```
 
 ---
 
-## ⚡ Comandos Rapidos
+## ⚡ Comandos Rápidos
 
 ```bash
 # Build e start
