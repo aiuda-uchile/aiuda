@@ -24,6 +24,7 @@ from datetime import datetime
 
 from collections import Counter
 
+
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 os.environ.setdefault("OMP_NUM_THREADS", "4")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
@@ -477,6 +478,24 @@ UI_TEXTS = {
         "metric_alt_text": "Texto Alternativo",
     },
 }
+
+def format_utc_offset(dt: datetime) -> str:
+    offset = dt.strftime("%z")  # ejemplo: -0300
+    if len(offset) == 5:
+        return f"{offset[:3]}:{offset[3:]}"  # ejemplo: -03:00
+    return offset or "local"
+
+
+def format_server_report_datetime() -> str:
+    dt = datetime.now().astimezone()
+    tz_name = dt.tzname() or "timezone local"
+    utc_offset = format_utc_offset(dt)
+
+    if utc_offset == "local":
+        return f"{dt.strftime('%d/%m/%Y %H:%M')} ({tz_name})"
+
+    return f"{dt.strftime('%d/%m/%Y %H:%M')} ({tz_name}, UTC{utc_offset})"
+
 
 def build_units_links_pdf_markup_master(payload: dict, unit_indexes: List[int], lang: str) -> str:
     m = _master(lang)
@@ -1266,7 +1285,7 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
         position: running(footerImage);
         width: 210mm;
         height: 22mm;
-        object-fit: cover;
+        object-fit: fill;
         margin: 0;
       }
       .section { padding-left: 0; padding-right: 0; }
@@ -4293,14 +4312,12 @@ def analyze_document(units: List[dict], document_type: str, input_filename: str)
     reportable_issues = [issue for issue in issues if issue.get("category_code") != "processing_note"]
 
     units_label = friendly_units_label(document_type)
-    finished_at = datetime.now()
-
-    finished_at = datetime.now()
+    finished_at_text = format_server_report_datetime()
 
     overview = (
         f"Se analizaron {len(units)} {units_label} del archivo {input_filename}.\n"
         f"Se detectaron {len(reportable_issues)} alertas.\n"
-        f"Fecha de finalización: {finished_at.strftime('%d/%m/%Y %H:%M')}."
+        f"Fecha de finalización: {finished_at_text}."
     )
 
     severity_totals = {
@@ -5981,7 +5998,7 @@ def render_report_html_es_v2(payload: dict, title: str) -> str:
         position: running(footerImage);
         width: 210mm;
         height: 22mm;
-        object-fit: cover;
+        object-fit: fill;
         margin: 0;
       }
       .columns { display: block; }
@@ -6347,7 +6364,7 @@ def render_report_html(payload: dict, title: str) -> str:
         position: running(footerImage);
         width: 210mm;
         height: 22mm;
-        object-fit: cover;
+        object-fit: fill;
         margin: 0;
       }
     }
@@ -7158,7 +7175,7 @@ def render_report_html_i18n(payload: dict, title: str, lang: str) -> str:
         position: running(footerImage);
         width: 210mm;
         height: 22mm;
-        object-fit: cover;
+        object-fit: fill;
         margin: 0;
       }
       .columns { display: block; }
@@ -7497,7 +7514,8 @@ def process_document(
         **report_base,
     }
 
-    report_generated_at = datetime.now().strftime("%d/%m/%Y %H:%M")
+    report_generated_at = format_server_report_datetime()
+
     original_payload["report_generated_at"] = report_generated_at
 
     # Opcional: mantener por compatibilidad.
