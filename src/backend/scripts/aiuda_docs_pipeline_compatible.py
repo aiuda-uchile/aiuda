@@ -32,7 +32,17 @@ os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 APP_NAME = "AIUDA Docs Pipeline"
 ALLOWED_TARGETS = {"es", "en", "pt", "gl"}
 
+def is_pdf_report(payload: dict) -> bool:
+    summary = payload.get("summary", {}) or {}
+    totals = summary.get("totals", {}) or {}
 
+    document_type = (
+        totals.get("document_type")
+        or payload.get("document_type")
+        or ""
+    )
+
+    return str(document_type).lower() == "pdf"
 
 MASTER_REPORT_TEXTS = {
     "es": {
@@ -40,7 +50,10 @@ MASTER_REPORT_TEXTS = {
         "estimated_reading_time": "Tiempo estimado de lectura del material:",
         "intro": "En el análisis del documento identificamos oportunidades de mejora para ayudarte a crear materiales más claros y accesibles, considerando:",
         "intro_no_issues": "En el análisis del documento no fueron encontradas incidencias. El análisis de la presentación consideró:",
-
+        "pdf_limit_notice": {
+            "title": "Aviso sobre el análisis de archivos PDF",
+            "text": "El análisis de archivos PDF puede ser más limitado que el análisis de presentaciones PPT o PPTX. Esto puede ocurrir cuando el documento no conserva información estructural suficiente, cuando el contenido está aplanado como imagen o cuando algunas propiedades visuales y de accesibilidad no están disponibles. Para una experiencia de análisis más completa, se recomienda utilizar el archivo original en formato PPT o PPTX siempre que sea posible.",
+        },
         "summary_blocks": [
             {
                 "title": "Comprensión visual",
@@ -152,6 +165,10 @@ MASTER_REPORT_TEXTS = {
         "estimated_reading_time": "Estimated reading time:",
         "intro": "The document analysis identified improvement opportunities to help create clearer and more accessible materials, considering:",
         "intro_no_issues": "No issues were found in the document analysis. The presentation analysis considered:",
+        "pdf_limit_notice": {
+            "title": "Notice about PDF file analysis",
+            "text": "PDF file analysis may be more limited than PPT or PPTX presentation analysis. This can occur when the document does not preserve enough structural information, when the content is flattened as an image, or when some visual and accessibility properties are not available. For a more complete analysis experience, using the original PPT or PPTX file is recommended whenever possible.",
+        },
         "summary_blocks": [
             {"title": "Visual comprehension", "text": "Font size, line spacing, typography, amount of text, color, and contrast."},
             {"title": "Content organization", "text": "Visual hierarchy and number of elements per slide."},
@@ -213,6 +230,10 @@ MASTER_REPORT_TEXTS = {
         "estimated_reading_time": "Tempo estimado de leitura do material:",
         "intro": "A análise do documento identificou oportunidades de melhoria para ajudar a criar materiais mais claros e acessíveis, considerando:",
 "intro_no_issues": "Na análise do documento não foram encontradas incidências. A análise da apresentação considerou:",
+        "pdf_limit_notice": {
+            "title": "Aviso sobre a análise de arquivos PDF",
+            "text": "A análise de arquivos PDF pode ser mais limitada do que a análise de apresentações PPT ou PPTX. Isso pode ocorrer quando o documento não preserva informações estruturais suficientes, quando o conteúdo está achatado como imagem ou quando algumas propriedades visuais e de acessibilidade não estão disponíveis. Para uma experiência de análise mais completa, recomenda-se utilizar o arquivo original em formato PPT ou PPTX sempre que possível.",
+        },
         "summary_blocks": [
             {"title": "Compreensão visual", "text": "Tamanho da letra, espaçamento entre linhas, tipografia, quantidade de texto, cor e contraste."},
             {"title": "Organização do conteúdo", "text": "Hierarquia visual e quantidade de elementos por slide."},
@@ -274,6 +295,10 @@ MASTER_REPORT_TEXTS = {
         "estimated_reading_time": "Tempo estimado de lectura do material:",
         "intro": "Na análise do documento identificáronse oportunidades de mellora para crear materiais máis claros e accesibles, considerando:",
         "intro_no_issues": "Na análise do documento non foron encontradas incidencias. A análise da presentación considerou:",
+        "pdf_limit_notice": {
+            "title": "Aviso sobre a análise de arquivos PDF",
+            "text": "A análise de arquivos PDF pode ser máis limitada ca análise de presentacións PPT ou PPTX. Isto pode ocorrer cando o documento non conserva información estrutural suficiente, cando o contido está aplanado como imaxe ou cando algunhas propiedades visuais e de accesibilidade non están dispoñibles. Para unha experiencia de análise máis completa, recoméndase utilizar o arquivo orixinal en formato PPT ou PPTX sempre que sexa posible.",
+        },
         "summary_blocks": [
             {"title": "Comprensión visual", "text": "Tamaño da letra, interliñado, tipografía, cantidade de texto, cor e contraste."},
             {"title": "Organización do contido", "text": "Xerarquía visual e cantidade de elementos por diapositiva."},
@@ -1216,6 +1241,16 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
         """
         for card in m["summary_blocks"]
     )
+    pdf_notice_html = ""
+
+    if is_pdf_report(payload):
+        notice = m.get("pdf_limit_notice", MASTER_REPORT_TEXTS["es"]["pdf_limit_notice"])
+        pdf_notice_html = f"""
+        <div class="card pdf-limit-notice">
+          <div class="metric-label">{html.escape(str(notice["title"]))}</div>
+          <p>{html.escape(str(notice["text"]))}</p>
+        </div>
+        """
 
     styles = """
     :root {
@@ -1257,6 +1292,17 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
       border: 0;
       border-top: 1px solid #d9dde3;
       margin: 18px 0 0 0;
+    }
+    .pdf-limit-notice {
+      background: #fffdf7;
+      border-color: #ead9a8;
+    }
+    
+    .pdf-limit-notice p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
     }
     @media print {
       @page {
@@ -1339,10 +1385,11 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
       <section class="section">
         <hr class="section-divider">
         <div class="card decision-card">
-          <p>{html.escape(intro_text)}</p>
-          <div class="metric-grid">{summary_cards_html}</div>
+            <p>{html.escape(intro_text)}</p>
+            <div class="metric-grid">{summary_cards_html}</div>
         </div>
-      </section>
+        {pdf_notice_html}
+        </section>
 
       {recommendations_html}
 
@@ -1450,6 +1497,13 @@ def render_html_to_pdf_master(html_content: str, pdf_path: Path, payload: Option
         story.append(Spacer(1, 4))
         story.append(_divider())
 
+        if is_pdf_report(payload):
+            notice = m.get("pdf_limit_notice", MASTER_REPORT_TEXTS["es"]["pdf_limit_notice"])
+            story.append(Spacer(1, 6))
+            story.append(Paragraph(f"<b>{html.escape(str(notice['title']))}</b>", body_style))
+            story.append(Paragraph(html.escape(str(notice["text"])), muted_style))
+            story.append(Spacer(1, 6))
+
         story.append(Paragraph(html.escape(intro_text), body_style))
         story.append(Spacer(1, 4))
 
@@ -1555,6 +1609,11 @@ def render_report_text_master(payload: dict, lang: str) -> str:
     for card in m.get("summary_blocks", []):
         lines.append(str(card.get("title", "")))
         lines.append(str(card.get("text", "")))
+        lines.append("")
+    if is_pdf_report(payload):
+        notice = m.get("pdf_limit_notice", MASTER_REPORT_TEXTS["es"]["pdf_limit_notice"])
+        lines.append(str(notice["title"]))
+        lines.append(str(notice["text"]))
         lines.append("")
 
     if has_issues:
