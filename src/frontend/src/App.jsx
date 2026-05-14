@@ -579,6 +579,8 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [tasks, setTasks] = useState([])
+  const [sessionTaskIds, setSessionTaskIds] = useState(new Set())
+  const sessionTaskIdsRef = useRef(new Set())
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [filter, setFilter] = useState("all")
   const [searchId, setSearchId] = useState("")
@@ -817,7 +819,8 @@ export default function App() {
         throw new Error(`No se pudieron cargar las tareas (${response.status})`)
       }
       const data = await response.json()
-      const nextTasks = Array.isArray(data.tasks) ? data.tasks : []
+      const allTasks = Array.isArray(data.tasks) ? data.tasks : []
+      const nextTasks = allTasks.filter((t) => sessionTaskIdsRef.current.has(t.id))
       setTasks(nextTasks)
 
       setSelectedTaskId((prevSelectedTaskId) => {
@@ -861,8 +864,27 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    sessionTaskIdsRef.current = sessionTaskIds
+    if (sessionTaskIds.size > 0) fetchTasks(true)
+  }, [sessionTaskIds])
+
+  useEffect(() => {
     setCurrentPage(1)
   }, [filter, searchId])
+
+  useEffect(() => {
+    const id = searchId.trim().toLowerCase()
+    if (id.length < 6) return
+    if (sessionTaskIds.has(id)) return
+    fetch(`/api/tasks/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.id) {
+          setSessionTaskIds((prev) => new Set([...prev, data.id]))
+        }
+      })
+      .catch(() => {})
+  }, [searchId])
 
 
 
@@ -993,11 +1015,17 @@ export default function App() {
         )
       }
 
+      const newTaskId = data?.task?.id
+      if (newTaskId) {
+        setSessionTaskIds((prev) => new Set([...prev, newTaskId]))
+        setSelectedTaskId(newTaskId)
+      }
       await fetchTasks()
       setSelectedFile(null)
       setForm(INITIAL_FORM)
       setSelectedFile(null)
       setAcceptedTerms(false)
+      setSearchId("")
 
       const fileInput = document.getElementById("aluda-file-input")
       if (fileInput) fileInput.value = ""
