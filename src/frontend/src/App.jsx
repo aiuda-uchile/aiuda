@@ -617,6 +617,7 @@ export default function App() {
     }))
   }, [lang])
   const [profile, setProfile] = useState("teacher")
+  const profileRef = useRef("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
@@ -820,7 +821,9 @@ export default function App() {
       }
       const data = await response.json()
       const allTasks = Array.isArray(data.tasks) ? data.tasks : []
-      const nextTasks = allTasks.filter((t) => sessionTaskIdsRef.current.has(t.id))
+      const nextTasks = profileRef.current === "technical"
+        ? allTasks
+        : allTasks.filter((t) => sessionTaskIdsRef.current.has(t.id))
       setTasks(nextTasks)
 
       setSelectedTaskId((prevSelectedTaskId) => {
@@ -867,6 +870,11 @@ export default function App() {
     sessionTaskIdsRef.current = sessionTaskIds
     if (sessionTaskIds.size > 0) fetchTasks(true)
   }, [sessionTaskIds])
+
+  useEffect(() => {
+    profileRef.current = profile
+    fetchTasks(true)
+  }, [profile])
 
   useEffect(() => {
     setCurrentPage(1)
