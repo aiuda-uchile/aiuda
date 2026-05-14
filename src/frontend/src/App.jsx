@@ -67,9 +67,9 @@ function getPublicAssetUrl(path) {
 
 const TARGET_LANGS = [
   { code: "es", label: "Español", icon: "🇪🇸" },
-  { code: "en", label: "Inglés", icon: "🇬🇧" },
   { code: "pt", label: "Portugués", icon: "🇧🇷" },
   { code: "gl", label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
+  { code: "en", label: "Inglés", icon: "🇬🇧" },
 ]
 
 const LANGUAGE_META = {
@@ -103,6 +103,8 @@ const INITIAL_FORM = {
     source_lang_mode: "auto",
     source_lang: "",
     target_langs: ["es", "en", "pt", "gl"],
+    file_langs: ["es", "en", "pt", "gl"],
+    output_formats: ["srt"],
   },
 }
 
@@ -115,11 +117,11 @@ function formatDate(value) {
   }
 }
 
-function getTaskTypeLabel(taskType) {
-  if (taskType === "audio") return "Audio"
-  if (taskType === "video") return "video"
-  if (taskType === "documents") return "Documentos"
-  return taskType || "Tarea"
+function getTaskTypeLabel(taskType, t) {
+  if (taskType === "audio") return t ? t("type-audio") : "Audio"
+  if (taskType === "video") return t ? t("type-video") : "Vídeo"
+  if (taskType === "documents") return t ? t("type-documents") : "Documentos"
+  return taskType || (t ? t("type-task") : "Tarea")
 }
 
 function getTaskIcon(taskType) {
@@ -595,9 +597,23 @@ export default function App() {
   const [currentAudioTime, setCurrentAudioTime] = useState(0)
   const segmentRefs = useRef({})
   const logScrollRef = useRef(null)
+  const transcriptScrollRef = useRef(null)
+  const userScrollingRef = useRef(false)
+  const userScrollTimeoutRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
   const { t, lang,changeLanguage } = useI18n()
   const languagesNav = ["es","pt","gl","en"]
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      options: {
+        ...prev.options,
+        target_langs: [lang],
+        file_langs: [lang],
+      },
+    }))
+  }, [lang])
   const [profile, setProfile] = useState("teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -864,7 +880,7 @@ export default function App() {
     setForm((prev) => ({
       ...prev,
       mode,
-      mediaType: mode === "multimedia" ? "audio" : "video",
+      mediaType: mode === "multimedia" ? "video" : "audio",
       options: {
         ...prev.options,
         accessibility: mode === "documental",
@@ -1416,14 +1432,14 @@ export default function App() {
   ])
   useEffect(() => {
     if (activeSegmentId === null) return
-
+    if (userScrollingRef.current) return
+    const container = transcriptScrollRef.current
     const element = segmentRefs.current[activeSegmentId]
-    if (!element) return
-
-    element.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    })
+    if (!container || !element) return
+    const containerTop = container.getBoundingClientRect().top
+    const elementTop = element.getBoundingClientRect().top
+    const offset = elementTop - containerTop
+    container.scrollBy({ top: offset, behavior: "smooth" })
   }, [activeSegmentId])
 
   useEffect(() => {
@@ -1802,7 +1818,7 @@ export default function App() {
                     
                   </div>
                   {/*BLOQUE FER*/}
-                  <div className="hidden">
+                  <div>
                     <div className="rounded-2xl bg-slate-50">
                         {form.mode === "multimedia" ? (
                           <>
@@ -2142,7 +2158,7 @@ export default function App() {
                               variant="outline"
                               className="rounded-full px-2.5 py-0.5"
                             >
-                              {getTaskTypeLabel(task.task_type)}
+                              {getTaskTypeLabel(task.task_type, t)}
                             </Badge>
                           </div>
 
@@ -2186,7 +2202,7 @@ export default function App() {
                               <span className="truncate">
                                 {t("notification")}{" "}
                                 <span className="font-medium text-slate-700">
-                                  {getNotificationState(task)}
+                                  {t("notif-" + getNotificationState(task)) || getNotificationState(task)}
                                 </span>
                               </span>
                             </div>
@@ -2251,7 +2267,7 @@ export default function App() {
                         {selectedTaskStatus.label}
                       </Badge>
                       <Badge variant="outline" className="rounded-full px-3 py-1">
-                        {getTaskTypeLabel(selectedTask.task_type)}
+                        {getTaskTypeLabel(selectedTask.task_type, t)}
                       </Badge>
                     </div>
                   )}
@@ -2464,7 +2480,17 @@ export default function App() {
                             </div>
                           ) : selectedTaskIsDocument ? null : selectedTaskCurrentJsonCacheKey &&
                             previewJsonByFile[selectedTaskCurrentJsonCacheKey]?.segments?.length > 0 ? (
-                            <div className="max-h-80 space-y-3 overflow-auto">
+                            <div
+                              className="max-h-80 space-y-3 overflow-auto"
+                              ref={transcriptScrollRef}
+                              onScroll={() => {
+                                userScrollingRef.current = true
+                                if (userScrollTimeoutRef.current) clearTimeout(userScrollTimeoutRef.current)
+                                userScrollTimeoutRef.current = setTimeout(() => {
+                                  userScrollingRef.current = false
+                                }, 3000)
+                              }}
+                            >
                               {previewJsonByFile[selectedTaskCurrentJsonCacheKey].segments.map(
                                 (segment) => {
                                   const isActive =

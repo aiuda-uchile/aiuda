@@ -116,6 +116,9 @@ MAIL_TRANSLATIONS = {
         "thanks": "Gracias por utilizar Aiuda.",
         "subject_finished": "Proceso completado",
         "subject_error": "Proceso con error",
+        "subject_received": "Tarea recibida",
+        "intro_received": "Hemos recibido tu archivo y lo procesaremos a la brevedad.",
+        "received_note": "Te notificaremos cuando el procesamiento haya finalizado.",
     },
     "gl": {
         "greeting": "Ola,",
@@ -140,6 +143,9 @@ MAIL_TRANSLATIONS = {
         "thanks": "Grazas por utilizar Aiuda.",
         "subject_finished": "Proceso completado",
         "subject_error": "Proceso con erro",
+        "subject_received": "Tarefa recibida",
+        "intro_received": "Recibimos o teu ficheiro e procesaremolo en breve.",
+        "received_note": "Notificaremoste cando o procesamento remate.",
     },
     "pt": {
         "greeting": "Ola,",
@@ -164,6 +170,9 @@ MAIL_TRANSLATIONS = {
         "thanks": "Obrigado por utilizar o Aiuda.",
         "subject_finished": "Processo concluido",
         "subject_error": "Processo com erro",
+        "subject_received": "Tarefa recebida",
+        "intro_received": "Recebemos o seu ficheiro e iremos processá-lo em breve.",
+        "received_note": "Notificaremos quando o processamento terminar.",
     },
     "en": {
         "greeting": "Hello,",
@@ -188,6 +197,9 @@ MAIL_TRANSLATIONS = {
         "thanks": "Thank you for using Aiuda.",
         "subject_finished": "Process completed",
         "subject_error": "Process with error",
+        "subject_received": "Task received",
+        "intro_received": "We have received your file and will process it shortly.",
+        "received_note": "We will notify you when processing is complete.",
     },
 }
 
@@ -832,6 +844,132 @@ def write_task_report_file(task_id: str) -> Path:
     return report_path
 
 
+
+def send_task_received_email(task_id: str) -> None:
+    task = get_task(task_id)
+    lang = task.get("ui_lang", "es")
+    tr = MAIL_TRANSLATIONS.get(lang, MAIL_TRANSLATIONS["es"])
+    notify_email = normalize_bool(task.get("notify_email", False))
+    recipient = (task.get("email") or "").strip()
+    if not notify_email or not recipient:
+        return
+    if not SMTP_HOST or not SMTP_FROM:
+        return
+
+    subject = f"Aiuda | {tr['subject_received']} | {task.get('input_filename', 'recurso')}"
+
+    logo_cid = make_msgid(domain="aiuda.local")
+    logo_ref = logo_cid[1:-1]
+    footer_cid = make_msgid(domain="aiuda.local")
+    footer_ref = footer_cid[1:-1]
+
+    logo_html = f'<img src="cid:{escape(logo_ref)}" alt="Aiuda" style="display:block;height:52px;width:auto;border:0;">'
+    footer_image_html = (
+        f'<div style="margin-top:12px;text-align:center;">'
+        f'<img src="cid:{escape(footer_ref)}" alt="Labs UniversitarIA y entidades colaboradoras" '
+        f'style="display:block;max-width:100%;height:auto;margin:0 auto;border:0;">'
+        f'</div>'
+    )
+
+    body_html = f"""<!DOCTYPE html>
+<html lang="{escape(lang)}">
+  <body style="margin:0;padding:0;background:#F4F7FA;font-family:Arial,Helvetica,sans-serif;color:#12263A;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{escape(tr["intro_received"])}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7FA;padding:24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:720px;background:#FFFFFF;border-radius:18px;overflow:hidden;border:1px solid #DCE6EE;box-shadow:0 4px 18px rgba(18,38,58,0.06);">
+            <tr>
+              <td style="padding:22px 32px 8px 32px;background:#FFFFFF;">{logo_html}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 32px 8px 32px;">
+                <div style="font-size:15px;line-height:1.7;color:#425466;">{escape(tr["greeting"])}</div>
+                <div style="font-size:24px;line-height:1.35;font-weight:700;color:#12263A;margin-top:10px;">{escape(tr["intro_received"])}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 10px 32px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding:8px 0;color:#425466;font-size:14px;vertical-align:top;width:210px;"><strong>{escape(tr["field_resource"])}</strong></td>
+                    <td style="padding:8px 0;color:#12263A;font-size:14px;">{escape(str(task.get("input_filename", "-")))}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;color:#425466;font-size:14px;vertical-align:top;width:210px;"><strong>{escape(tr["task_id_label"])}</strong></td>
+                    <td style="padding:8px 0;color:#12263A;font-size:14px;"><code>{escape(str(task.get("id", "-")))}</code></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 32px 0 32px;">
+                <div style="padding:16px 18px;background:#EEF6F7;border:1px solid #D6EAEC;border-radius:12px;font-size:14px;line-height:1.7;color:#1F4D57;">
+                  {escape(tr["received_note"])}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 18px 32px;">
+                <div style="font-size:14px;line-height:1.7;color:#425466;">{escape(tr["thanks"])}</div>
+              </td>
+            </tr>
+          </table>
+          <div style="max-width:720px;padding:16px 12px 0 12px;font-size:12px;line-height:1.7;color:#6B7C93;text-align:center;">
+            {escape(get_footer_text(lang))}
+            {footer_image_html}
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>"""
+
+    body_text = (
+        f"{tr['greeting']}\n\n"
+        f"{tr['intro_received']}\n\n"
+        f"{tr['field_resource']}: {task.get('input_filename', '-')}\n"
+        f"{tr['task_id_label']} {task.get('id', '-')}\n\n"
+        f"{tr['received_note']}\n\n"
+        f"{tr['thanks']}"
+    )
+
+    msg = EmailMessage()
+    msg["From"] = SMTP_FROM
+    msg["To"] = recipient
+    msg["Subject"] = subject
+    msg.set_content(body_text)
+    msg.add_alternative(body_html, subtype="html")
+    try:
+        msg.get_payload()[-1].add_related(
+            get_embedded_logo_bytes(),
+            maintype="image", subtype="png",
+            cid=logo_cid, filename=AIUDA_LOGO_PATH.name, disposition="inline",
+        )
+        msg.get_payload()[-1].add_related(
+            get_footer_image_bytes(),
+            maintype="image", subtype="png",
+            cid=footer_cid, filename=AIUDA_FOOTER_PATH.name, disposition="inline",
+        )
+    except Exception:
+        pass
+    try:
+        if SMTP_SECURITY == "ssl":
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=60) as server:
+                if SMTP_USER:
+                    server.login(SMTP_USER, SMTP_PASSWORD)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=60) as server:
+                server.ehlo()
+                if SMTP_SECURITY == "tls":
+                    server.starttls()
+                    server.ehlo()
+                if SMTP_USER:
+                    server.login(SMTP_USER, SMTP_PASSWORD)
+                server.send_message(msg)
+    except Exception:
+        pass
 def send_task_email(task_id: str) -> None:
     task = get_task(task_id)
     lang = task.get("ui_lang", "es")
@@ -1417,6 +1555,7 @@ async def create_task(
     persist_tasks()
 
     TASK_QUEUE.put(task_id)
+    threading.Thread(target=send_task_received_email, args=(task_id,), daemon=True).start()
 
     return {
         "ok": True,
