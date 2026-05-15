@@ -616,8 +616,9 @@ export default function App() {
       },
     }))
   }, [lang])
-  const [profile, setProfile] = useState("teacher")
-  const profileRef = useRef("teacher")
+  const isAdmin = typeof window !== "undefined" && window.location.pathname === getPublicAssetUrl("/admin")
+  const [profile, setProfile] = useState(isAdmin ? "technical" : "teacher")
+  const profileRef = useRef(isAdmin ? "technical" : "teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
