@@ -1300,15 +1300,17 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
       margin: 18px 0 0 0;
     }
     .pdf-limit-notice {
-      background: #fffdf7;
+        background: #fffdf7;
       border-color: #ead9a8;
+      padding: 10px 12px;
+      margin-bottom: 8px;
     }
     
     .pdf-limit-notice p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
+      font-size: 12.8px;
+      line-height: 1.4;
     }
     @media print {
       @page {
@@ -1459,9 +1461,9 @@ def render_html_to_pdf_master(html_content: str, pdf_path: Path, payload: Option
             parent=styles["BodyText"],
             fontName="Helvetica",
             fontSize=9.5,
-            leading=13,
+            leading=11,
             textColor=colors.HexColor("#12263A"),
-            spaceAfter=4,
+            spaceAfter=2,
         )
         muted_style = ParagraphStyle(
             "AltMuted",
@@ -5931,24 +5933,24 @@ def render_report_html_es_v2(payload: dict, title: str) -> str:
     body { margin: 0; padding: 24px; background: var(--bg); color: var(--text); font-family: Arial, Helvetica, sans-serif; }
     .pdf-header-logo, .pdf-footer-image { display: none; }
     .page { max-width: 980px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; box-shadow: 0 6px 24px rgba(18, 38, 58, 0.08); }
-    .hero { padding: 30px 32px 18px 32px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
-    .hero h1 { margin: 0; font-size: 30px; line-height: 1.2; }
-    .hero p { margin: 10px 0 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+    .hero { padding: 22px 28px 12px 28px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
+    .hero h1 { margin: 0; font-size: 26px; line-height: 1.15; }
+    .hero p { margin: 6px 0 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
     .hero-overview { white-space: pre-line; }
-    .section { padding: 24px 32px 0 32px; }
-    .section:last-child { padding-bottom: 32px; }
-    h2 { margin: 0 0 14px 0; font-size: 21px; line-height: 1.3; }
-    h3 { margin: 0 0 12px 0; font-size: 17px; line-height: 1.3; }
+    .section { padding: 14px 28px 0 28px; }
+    .section:last-child { padding-bottom: 22px; }
+    h2 { margin: 0 0 8px 0; font-size: 18.5px; line-height: 1.25; }
+    h3 { margin: 0 0 7px 0; font-size: 15.5px; line-height: 1.25; }
     .section-kicker { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
-    .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .metric-card { border: 1px solid var(--line); border-radius: 16px; background: var(--soft); padding: 14px 16px; min-height: 90px; }
+    .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .metric-card { border: 1px solid var(--line); border-radius: 12px; background: var(--soft); padding: 10px 12px; min-height: 64px; }
     .teacher-card { background: var(--teacher-soft); }
-    .metric-label { color: var(--text); font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
-    .teacher-detail { color: var(--muted); font-size: 14px; line-height: 1.7; }
-    .card { border: 1px solid var(--line); border-radius: 16px; background: #fff; padding: 16px 18px; margin-bottom: 14px; }
+    .metric-label { color: var(--text); font-size: 13.5px; font-weight: 700; line-height: 1.25; margin-bottom: 4px; }
+    .teacher-detail { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .card { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 11px 13px; margin-bottom: 8px; }
     .decision-card { background: linear-gradient(180deg, #ffffff 0%, #f8fcff 100%); }
     .dimension-card { border: 1px solid var(--line); border-radius: 18px; background: #fff; padding: 18px 20px; }
-    .dimension-summary { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 0 0 14px 0; }
+    .dimension-summary { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 0 0 8px 0; }
     .dim-item-card { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); padding: 14px 16px; margin-bottom: 12px; }
     .dim-metric { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
     .dim-rec, .dim-units, li, .reference-detail { font-size: 14px; line-height: 1.7; }
@@ -5962,8 +5964,8 @@ def render_report_html_es_v2(payload: dict, title: str) -> str:
 }
 .section-divider {
   border: 0;
-  border-top: 1.2px solid #cfd6dd;
-  margin: 20px 0 0 0;
+  border-top: 1px solid #d9dde3;
+  margin: 10px 0 0 0;
 }
 .slide-rec-item {
   border: 1px solid var(--line);
@@ -6570,9 +6572,9 @@ def render_html_to_pdf_es_v2(html_content: str, pdf_path: Path, payload: Optiona
             parent=styles["BodyText"],
             fontName="Helvetica",
             fontSize=9.5,
-            leading=13,
+            leading=11,
             textColor=colors.HexColor("#12263A"),
-            spaceAfter=4,
+            spaceAfter=2,
         )
         muted_style = ParagraphStyle(
             "AltMuted",
@@ -6781,9 +6783,9 @@ def render_html_to_pdf(html_content: str, pdf_path: Path, payload: Optional[dict
             parent=styles["BodyText"],
             fontName="Helvetica",
             fontSize=9.5,
-            leading=13,
+            leading=11,
             textColor=colors.HexColor("#12263A"),
-            spaceAfter=4,
+            spaceAfter=2,
         )
         muted_style = ParagraphStyle("AludaMuted", parent=body_style, textColor=colors.HexColor("#536474"))
 
@@ -7165,7 +7167,7 @@ def render_report_html_i18n(payload: dict, title: str, lang: str) -> str:
     .slide-rec-item { border: 1px solid var(--line); border-radius: 14px; background: var(--soft); padding: 14px 16px; margin-bottom: 12px; }
     .slide-rec-metric { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
     .slide-rec-dimension { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
-    .slide-rec-text, .reference-detail, li { font-size: 14px; line-height: 1.7; }
+    .slide-rec-text, .reference-detail, li { font-size: 13px; line-height: 1.45; }
     .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
     @media print {
       @page {
