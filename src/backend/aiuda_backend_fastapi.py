@@ -1196,28 +1196,14 @@ def build_docs_commands(task: Dict[str, Any]) -> List[List[str]]:
     if use_ocr:
         base_cmd.append("--ocr")
 
+    if source_lang and source_lang != "auto":
+        base_cmd.extend(["--source-lang", source_lang])
+    if target_langs:
+        base_cmd.append("--translate-to")
+        base_cmd.extend(target_langs)
     commands.append(base_cmd)
 
-    if source_lang and source_lang != "auto":
-        for lang in target_langs:
-            if lang == source_lang:
-                continue
-
-            cmd = [
-                PYTHON_BIN,
-                str(DOCS_SCRIPT),
-                str(input_file),
-                "-o",
-                str(output_dir),
-                "--source-lang",
-                source_lang,
-                "--translate-to",
-                lang,
-            ]
-            if use_ocr:
-                cmd.append("--ocr")
-            commands.append(cmd)
-
+    return commands
     return commands
 
 

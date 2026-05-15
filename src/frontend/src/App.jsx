@@ -167,7 +167,7 @@ function buildPayload(form) {
       form.options.source_lang_mode === "manual"
         ? form.options.source_lang.trim() || "auto"
         : "auto",
-    target_langs: form.options.target_langs.join(","),
+    target_langs: (task_type === "documents" ? form.options.file_langs : form.options.target_langs).join(","),
   }
 }
 
@@ -1030,7 +1030,14 @@ export default function App() {
       }
       await fetchTasks()
       setSelectedFile(null)
-      setForm(INITIAL_FORM)
+      setForm((prev) => ({
+        ...INITIAL_FORM,
+        options: {
+          ...INITIAL_FORM.options,
+          target_langs: [lang],
+          file_langs: [lang],
+        },
+      }))
       setSelectedFile(null)
       setAcceptedTerms(false)
       setSearchId("")
