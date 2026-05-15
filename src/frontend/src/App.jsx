@@ -1705,7 +1705,7 @@ export default function App() {
               </CardHeader>
 
               <CardContent>
-                <form onSubmit={submitTask} className="space-y-6">
+                <form onSubmit={submitTask} className="space-y-3 -mt-3">
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <button
@@ -1886,7 +1886,7 @@ export default function App() {
                                             }}
                                             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
                                               active
-                                                ? "bg-sky-100 border-sky-300 text-sky-800"
+                                                ? "bg-sky-100 border-sky-300 text-sky"
                                                 : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                             }`}
                                           >
@@ -1903,16 +1903,16 @@ export default function App() {
                             {form.mediaType === "video" && (
                               <div className="rounded-xl bg-white">
                                 <Label className="text-base">Formatos de salida</Label>
-                                <p className="text-xs text-slate-500 mb-2">
+                                <p className="text-xs text-slate-500 mb-1">
                                   Seleccioná qué archivos generar para cada idioma.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {[
-                                    { id: "srt", label: "SRT (subtítulos)" },
-                                    { id: "vtt", label: "VTT (subtítulos web)" },
-                                    { id: "txt", label: "TXT (texto plano)" },
-                                    { id: "json", label: "JSON (datos)" },
-                                  ].map(({ id, label }) => {
+                                    { id: "srt", title: "SRT", subtitle: "subtítulos" },
+                                    { id: "vtt", title: "VTT", subtitle: "subtítulos web" },
+                                    { id: "txt", title: "TXT", subtitle: "texto plano" },
+                                    { id: "json", title: "JSON", subtitle: "datos" },
+                                  ].map(({ id, title,subtitle }) => {
                                     const active = (form.options.output_formats || []).includes(id)
                                     return (
                                       <button
@@ -1924,13 +1924,16 @@ export default function App() {
                                           else current.add(id)
                                           setOption("output_formats", Array.from(current))
                                         }}
-                                        className={`rounded-full px-3 py-1 text-base font-medium border transition-colors ${
+                                        className={`rounded-full px-3 py-1 text-md font-medium border transition-colors ${
                                           active
-                                            ? "bg-sky-100 border-sky-300 text-sky-800"
-                                            : "bg-white border-slate-200 text-slate-500"
+                                            ? "bg-sky-100 border-sky-300 text-primary"
+                                            : "bg-white border-slate-200 text-primary"
                                         }`}
                                       >
-                                        {label}
+                                        <span className="block font-semibold">{title}</span>
+                                          <span className="block text-xs opacity-80">
+                                            ({subtitle})
+                                          </span>
                                       </button>
                                     )
                                   })}
@@ -1980,10 +1983,10 @@ export default function App() {
                       <div className="space-y-4">
                         <div className="space-y-3">
                           <Label className="text-base mb-0 mt-2">Idiomas para archivos</Label>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 mb-1">
                             Seleccioná en qué idiomas generar los archivos de subtítulos y texto.
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2 mb-2">
                             {TARGET_LANGS.map((lang) => {
                               const active = (form.options.file_langs || []).includes(lang.code)
                               const enabled = (form.options.output_formats || []).length > 0
@@ -1998,11 +2001,11 @@ export default function App() {
                                     else current.add(lang.code)
                                     setOption("file_langs", Array.from(current))
                                   }}
-                                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-medium border transition-colors ${
+                                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-md font-medium border transition-colors ${
                                     !enabled
                                       ? "opacity-40 cursor-not-allowed bg-white border-slate-200 text-slate-400"
                                       : active
-                                      ? "bg-sky-100 border-sky-300 text-sky-800"
+                                      ? "bg-sky-100 border-sky-300 text-primary"
                                       : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                   }`}
                                 >
