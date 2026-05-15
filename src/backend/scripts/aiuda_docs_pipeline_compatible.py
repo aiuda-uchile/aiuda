@@ -531,34 +531,40 @@ def build_units_links_pdf_markup_master(payload: dict, unit_indexes: List[int], 
     document_type = (payload.get("summary", {}) or {}).get("totals", {}).get("document_type", "pptx")
     label = m["common"]["pages_for_review"] if document_type == "pdf" else m["common"]["slides_for_review"]
 
-    links = []
+    units = []
     for unit_index in unit_indexes:
         try:
-            unit_num = int(unit_index)
+            units.append(str(int(unit_index)))
         except Exception:
             continue
-        anchor = f"slide-summary-{unit_num}"
-        links.append(f'<a href="#{anchor}" color="blue">{unit_num}</a>')
 
-    if not links:
+    if not units:
         return html.escape(m["common"]["no_slides_review"])
 
-    return f"{html.escape(label)}: " + ", ".join(links)
+    return html.escape(f"{label}: " + ", ".join(units))
+
 
 def build_units_links_html_master(payload: dict, unit_indexes: List[int], lang: str) -> str:
     m = _master(lang)
+
     if not unit_indexes:
         return html.escape(m["common"]["no_slides_review"])
 
     document_type = (payload.get("summary", {}) or {}).get("totals", {}).get("document_type", "pptx")
     label = m["common"]["pages_for_review"] if document_type == "pdf" else m["common"]["slides_for_review"]
 
-    links = []
+    units = []
     for unit_index in unit_indexes:
-        anchor = f"slide-summary-{int(unit_index)}"
-        links.append(f'<a href="#{anchor}" class="slide-jump-link">{int(unit_index)}</a>')
+        try:
+            units.append(str(int(unit_index)))
+        except Exception:
+            continue
 
-    return f"{html.escape(label)}: " + ", ".join(links)
+    if not units:
+        return html.escape(m["common"]["no_slides_review"])
+
+    return html.escape(f"{label}: " + ", ".join(units))
+
 
 REPORT_I18N = {
     "es": {
@@ -1352,16 +1358,6 @@ def render_report_html_master(payload: dict, title: str, lang: str) -> str:
         </section>
 
         {build_dimension_recommendations_html_master(payload, lang)}
-
-        <section class="section">
-          <hr class="section-divider">
-          <h2>{html.escape(m['sections']['by_slide_title'])}</h2>
-          <div class="card">
-            <p>{html.escape(m['sections']['by_slide_intro'])}</p>
-          </div>
-        </section>
-
-        {build_slide_recommendations_html_master(payload, lang)}
         """
 
     return f"""<!DOCTYPE html>
@@ -1533,29 +1529,6 @@ def render_html_to_pdf_master(html_content: str, pdf_path: Path, payload: Option
                     story.append(Paragraph(units_markup, muted_style))
                     story.append(Spacer(1, 4))
 
-            story.append(_divider())
-            story.append(Paragraph(m["sections"]["by_slide_title"], heading_style))
-            story.append(Paragraph(m["sections"]["by_slide_intro"], body_style))
-
-            for slide in build_slide_recommendations_summary_master(payload, lang):
-                slide_anchor = f"slide-summary-{int(slide['unit_index'])}"
-                story.append(
-                    Paragraph(
-                        f'<a name="{slide_anchor}"/>{html.escape(str(slide["label"]))}',
-                        heading_style,
-                    )
-                )
-
-                for item in slide["items"]:
-                    story.append(Paragraph(f"<b>{html.escape(str(item['metric']))}</b>", body_style))
-                    story.append(Paragraph(html.escape(str(item["dimension"])), muted_style))
-                    story.append(
-                        Paragraph(
-                            f"<b>{html.escape(m['common']['recommendation'])}</b> {html.escape(str(item['recommendation']))}",
-                            body_style,
-                        )
-                    )
-                    story.append(Spacer(1, 4))
 
         story.append(_divider())
         c = m["criteria"]
@@ -1631,19 +1604,6 @@ def render_report_text_master(payload: dict, lang: str) -> str:
                 lines.append(f"- {item.get('metric', '-')}")
                 lines.append(f"  {m['common']['recommendation']} {item.get('recommendation', '-')}")
                 lines.append(f"  {units}")
-            lines.append("")
-
-        lines.extend([
-            m["sections"]["by_slide_title"],
-            m["sections"]["by_slide_intro"],
-            "",
-        ])
-        for slide in build_slide_recommendations_summary_master(payload, lang):
-            lines.append(str(slide.get("label", "")))
-            for item in slide.get("items", []):
-                lines.append(f"- {item.get('metric', '-')}")
-                lines.append(f"  {item.get('dimension', '-')}")
-                lines.append(f"  {m['common']['recommendation']} {item.get('recommendation', '-')}")
             lines.append("")
 
     c = m["criteria"]
