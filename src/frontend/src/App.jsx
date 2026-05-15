@@ -66,10 +66,10 @@ function getPublicAssetUrl(path) {
 
 
 const TARGET_LANGS = [
-  { code: "es", label: "Español", icon: "🇪🇸" },
-  { code: "pt", label: "Portugués", icon: "🇧🇷" },
-  { code: "gl", label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
-  { code: "en", label: "Inglés", icon: "🇬🇧" },
+  { code: "es", labelKey: "lang-es", icon: "🇪🇸" },
+  { code: "pt", labelKey: "lang-pt", icon: "🇧🇷" },
+  { code: "gl", labelKey: "lang-gl", icon: getPublicAssetUrl("galicia-icon.png") },
+  { code: "en", labelKey: "lang-en", icon: "🇬🇧" },
 ]
 
 const LANGUAGE_META = {
@@ -1890,7 +1890,7 @@ export default function App() {
                                                 : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                             }`}
                                           >
-                                            {lang.label}
+                                            {t(lang.labelKey)}
                                           </button>
                                         )
                                       })}
@@ -1908,11 +1908,11 @@ export default function App() {
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {[
-                                    { id: "srt", title: "SRT", subtitle: "subtítulos" },
-                                    { id: "vtt", title: "VTT", subtitle: "subtítulos web" },
-                                    { id: "txt", title: "TXT", subtitle: "texto plano" },
-                                    { id: "json", title: "JSON", subtitle: "datos" },
-                                  ].map(({ id, title,subtitle }) => {
+                                    { id: "srt", title: "SRT", subtitleKey: "fmt-srt" },
+                                    { id: "vtt", title: "VTT", subtitleKey: "fmt-vtt" },
+                                    { id: "txt", title: "TXT", subtitleKey: "fmt-txt" },
+                                    { id: "json", title: "JSON", subtitleKey: "fmt-json" },
+                                  ].map(({ id, title, subtitleKey }) => {
                                     const active = (form.options.output_formats || []).includes(id)
                                     return (
                                       <button
@@ -1932,7 +1932,7 @@ export default function App() {
                                       >
                                         <span className="block font-semibold">{title}</span>
                                           <span className="block text-xs opacity-80">
-                                            ({subtitle})
+                                            ({t(subtitleKey)})
                                           </span>
                                       </button>
                                     )
@@ -1966,7 +1966,7 @@ export default function App() {
                                               : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                           }`}
                                         >
-                                          {lang.label}
+                                          {t(lang.labelKey)}
                                         </button>
                                       )
                                     })}
@@ -2009,7 +2009,7 @@ export default function App() {
                                       : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                   }`}
                                 >
-                                  {lang.label}
+                                  {t(lang.labelKey)}
                                 </button>
                               )
                             })}
