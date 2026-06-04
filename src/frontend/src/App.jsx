@@ -66,10 +66,10 @@ function getPublicAssetUrl(path) {
 
 
 const TARGET_LANGS = [
-  { code: "es", label: "Español", icon: "🇪🇸" },
-  { code: "en", label: "Inglés", icon: "🇬🇧" },
-  { code: "pt", label: "Portugués", icon: "🇧🇷" },
-  { code: "gl", label: "Gallego", icon: getPublicAssetUrl("galicia-icon.png") },
+  { code: "es", labelKey: "lang-es", icon: "🇪🇸" },
+  { code: "pt", labelKey: "lang-pt", icon: "🇧🇷" },
+  { code: "gl", labelKey: "lang-gl", icon: getPublicAssetUrl("galicia-icon.png") },
+  { code: "en", labelKey: "lang-en", icon: "🇬🇧" },
 ]
 
 const LANGUAGE_META = {
@@ -103,6 +103,8 @@ const INITIAL_FORM = {
     source_lang_mode: "auto",
     source_lang: "",
     target_langs: ["es", "en", "pt", "gl"],
+    file_langs: ["es", "en", "pt", "gl"],
+    output_formats: ["srt"],
   },
 }
 
@@ -115,11 +117,11 @@ function formatDate(value) {
   }
 }
 
-function getTaskTypeLabel(taskType) {
-  if (taskType === "audio") return "Audio"
-  if (taskType === "video") return "video"
-  if (taskType === "documents") return "Documentos"
-  return taskType || "Tarea"
+function getTaskTypeLabel(taskType, t) {
+  if (taskType === "audio") return t ? t("type-audio") : "Audio"
+  if (taskType === "video") return t ? t("type-video") : "Vídeo"
+  if (taskType === "documents") return t ? t("type-documents") : "Documentos"
+  return taskType || (t ? t("type-task") : "Tarea")
 }
 
 function getTaskIcon(taskType) {
@@ -165,7 +167,7 @@ function buildPayload(form) {
       form.options.source_lang_mode === "manual"
         ? form.options.source_lang.trim() || "auto"
         : "auto",
-    target_langs: form.options.target_langs.join(","),
+    target_langs: (task_type === "documents" ? form.options.file_langs : form.options.target_langs).join(","),
   }
 }
 
@@ -577,6 +579,8 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [tasks, setTasks] = useState([])
+  const [sessionTaskIds, setSessionTaskIds] = useState(new Set())
+  const sessionTaskIdsRef = useRef(new Set())
   const [selectedTaskId, setSelectedTaskId] = useState(null)
   const [filter, setFilter] = useState("all")
   const [searchId, setSearchId] = useState("")
@@ -595,10 +599,26 @@ export default function App() {
   const [currentAudioTime, setCurrentAudioTime] = useState(0)
   const segmentRefs = useRef({})
   const logScrollRef = useRef(null)
+  const transcriptScrollRef = useRef(null)
+  const userScrollingRef = useRef(false)
+  const userScrollTimeoutRef = useRef(null)
   const [showLogByTask, setShowLogByTask] = useState({})
   const { t, lang,changeLanguage } = useI18n()
   const languagesNav = ["es","pt","gl","en"]
-  const [profile, setProfile] = useState("teacher")
+
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      options: {
+        ...prev.options,
+        target_langs: [lang],
+        file_langs: [lang],
+      },
+    }))
+  }, [lang])
+  const isAdmin = typeof window !== "undefined" && window.location.pathname === getPublicAssetUrl("/admin")
+  const [profile, setProfile] = useState(isAdmin ? "technical" : "teacher")
+  const profileRef = useRef(isAdmin ? "technical" : "teacher")
   const [menuOpen, setMenuOpen] = useState(false)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [showTerms, setShowTerms] = useState(false)
@@ -801,7 +821,10 @@ export default function App() {
         throw new Error(`No se pudieron cargar las tareas (${response.status})`)
       }
       const data = await response.json()
-      const nextTasks = Array.isArray(data.tasks) ? data.tasks : []
+      const allTasks = Array.isArray(data.tasks) ? data.tasks : []
+      const nextTasks = profileRef.current === "technical"
+        ? allTasks
+        : allTasks.filter((t) => sessionTaskIdsRef.current.has(t.id))
       setTasks(nextTasks)
 
       setSelectedTaskId((prevSelectedTaskId) => {
@@ -845,8 +868,32 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    sessionTaskIdsRef.current = sessionTaskIds
+    if (sessionTaskIds.size > 0) fetchTasks(true)
+  }, [sessionTaskIds])
+
+  useEffect(() => {
+    profileRef.current = profile
+    fetchTasks(true)
+  }, [profile])
+
+  useEffect(() => {
     setCurrentPage(1)
   }, [filter, searchId])
+
+  useEffect(() => {
+    const id = searchId.trim().toLowerCase()
+    if (id.length < 6) return
+    if (sessionTaskIds.has(id)) return
+    fetch(`/api/tasks/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.id) {
+          setSessionTaskIds((prev) => new Set([...prev, data.id]))
+        }
+      })
+      .catch(() => {})
+  }, [searchId])
 
 
 
@@ -864,7 +911,7 @@ export default function App() {
     setForm((prev) => ({
       ...prev,
       mode,
-      mediaType: mode === "multimedia" ? "audio" : "video",
+      mediaType: mode === "multimedia" ? "video" : "audio",
       options: {
         ...prev.options,
         accessibility: mode === "documental",
@@ -977,11 +1024,24 @@ export default function App() {
         )
       }
 
+      const newTaskId = data?.task?.id
+      if (newTaskId) {
+        setSessionTaskIds((prev) => new Set([...prev, newTaskId]))
+        setSelectedTaskId(newTaskId)
+      }
       await fetchTasks()
       setSelectedFile(null)
-      setForm(INITIAL_FORM)
+      setForm((prev) => ({
+        ...INITIAL_FORM,
+        options: {
+          ...INITIAL_FORM.options,
+          target_langs: [lang],
+          file_langs: [lang],
+        },
+      }))
       setSelectedFile(null)
       setAcceptedTerms(false)
+      setSearchId("")
 
       const fileInput = document.getElementById("aluda-file-input")
       if (fileInput) fileInput.value = ""
@@ -1416,14 +1476,14 @@ export default function App() {
   ])
   useEffect(() => {
     if (activeSegmentId === null) return
-
+    if (userScrollingRef.current) return
+    const container = transcriptScrollRef.current
     const element = segmentRefs.current[activeSegmentId]
-    if (!element) return
-
-    element.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    })
+    if (!container || !element) return
+    const containerTop = container.getBoundingClientRect().top
+    const elementTop = element.getBoundingClientRect().top
+    const offset = elementTop - containerTop
+    container.scrollBy({ top: offset, behavior: "smooth" })
   }, [activeSegmentId])
 
   useEffect(() => {
@@ -1645,7 +1705,7 @@ export default function App() {
               </CardHeader>
 
               <CardContent>
-                <form onSubmit={submitTask} className="space-y-6">
+                <form onSubmit={submitTask} className="space-y-3 -mt-3">
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <button
@@ -1802,7 +1862,7 @@ export default function App() {
                     
                   </div>
                   {/*BLOQUE FER*/}
-                  <div className="hidden">
+                  <div>
                     <div className="rounded-2xl bg-slate-50">
                         {form.mode === "multimedia" ? (
                           <>
@@ -1826,11 +1886,11 @@ export default function App() {
                                             }}
                                             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
                                               active
-                                                ? "bg-sky-100 border-sky-300 text-sky-800"
+                                                ? "bg-sky-100 border-sky-300 text-sky"
                                                 : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                             }`}
                                           >
-                                            {lang.label}
+                                            {t(lang.labelKey)}
                                           </button>
                                         )
                                       })}
@@ -1843,16 +1903,16 @@ export default function App() {
                             {form.mediaType === "video" && (
                               <div className="rounded-xl bg-white">
                                 <Label className="text-base">Formatos de salida</Label>
-                                <p className="text-xs text-slate-500 mb-2">
+                                <p className="text-xs text-slate-500 mb-1">
                                   Seleccioná qué archivos generar para cada idioma.
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   {[
-                                    { id: "srt", label: "SRT (subtítulos)" },
-                                    { id: "vtt", label: "VTT (subtítulos web)" },
-                                    { id: "txt", label: "TXT (texto plano)" },
-                                    { id: "json", label: "JSON (datos)" },
-                                  ].map(({ id, label }) => {
+                                    { id: "srt", title: "SRT", subtitleKey: "fmt-srt" },
+                                    { id: "vtt", title: "VTT", subtitleKey: "fmt-vtt" },
+                                    { id: "txt", title: "TXT", subtitleKey: "fmt-txt" },
+                                    { id: "json", title: "JSON", subtitleKey: "fmt-json" },
+                                  ].map(({ id, title, subtitleKey }) => {
                                     const active = (form.options.output_formats || []).includes(id)
                                     return (
                                       <button
@@ -1864,13 +1924,16 @@ export default function App() {
                                           else current.add(id)
                                           setOption("output_formats", Array.from(current))
                                         }}
-                                        className={`rounded-full px-3 py-1 text-base font-medium border transition-colors ${
+                                        className={`rounded-full px-3 py-1 text-md font-medium border transition-colors ${
                                           active
-                                            ? "bg-sky-100 border-sky-300 text-sky-800"
-                                            : "bg-white border-slate-200 text-slate-500"
+                                            ? "bg-sky-100 border-sky-300 text-primary"
+                                            : "bg-white border-slate-200 text-primary"
                                         }`}
                                       >
-                                        {label}
+                                        <span className="block font-semibold">{title}</span>
+                                          <span className="block text-xs opacity-80">
+                                            ({t(subtitleKey)})
+                                          </span>
                                       </button>
                                     )
                                   })}
@@ -1903,7 +1966,7 @@ export default function App() {
                                               : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                           }`}
                                         >
-                                          {lang.label}
+                                          {t(lang.labelKey)}
                                         </button>
                                       )
                                     })}
@@ -1920,10 +1983,10 @@ export default function App() {
                       <div className="space-y-4">
                         <div className="space-y-3">
                           <Label className="text-base mb-0 mt-2">Idiomas para archivos</Label>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 mb-1">
                             Seleccioná en qué idiomas generar los archivos de subtítulos y texto.
                           </p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2 mb-2">
                             {TARGET_LANGS.map((lang) => {
                               const active = (form.options.file_langs || []).includes(lang.code)
                               const enabled = (form.options.output_formats || []).length > 0
@@ -1938,15 +2001,15 @@ export default function App() {
                                     else current.add(lang.code)
                                     setOption("file_langs", Array.from(current))
                                   }}
-                                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-base font-medium border transition-colors ${
+                                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-md font-medium border transition-colors ${
                                     !enabled
                                       ? "opacity-40 cursor-not-allowed bg-white border-slate-200 text-slate-400"
                                       : active
-                                      ? "bg-sky-100 border-sky-300 text-sky-800"
+                                      ? "bg-sky-100 border-sky-300 text-primary"
                                       : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
                                   }`}
                                 >
-                                  {lang.label}
+                                  {t(lang.labelKey)}
                                 </button>
                               )
                             })}
@@ -2142,7 +2205,7 @@ export default function App() {
                               variant="outline"
                               className="rounded-full px-2.5 py-0.5"
                             >
-                              {getTaskTypeLabel(task.task_type)}
+                              {getTaskTypeLabel(task.task_type, t)}
                             </Badge>
                           </div>
 
@@ -2186,7 +2249,7 @@ export default function App() {
                               <span className="truncate">
                                 {t("notification")}{" "}
                                 <span className="font-medium text-slate-700">
-                                  {getNotificationState(task)}
+                                  {t("notif-" + getNotificationState(task)) || getNotificationState(task)}
                                 </span>
                               </span>
                             </div>
@@ -2251,7 +2314,7 @@ export default function App() {
                         {selectedTaskStatus.label}
                       </Badge>
                       <Badge variant="outline" className="rounded-full px-3 py-1">
-                        {getTaskTypeLabel(selectedTask.task_type)}
+                        {getTaskTypeLabel(selectedTask.task_type, t)}
                       </Badge>
                     </div>
                   )}
@@ -2464,7 +2527,17 @@ export default function App() {
                             </div>
                           ) : selectedTaskIsDocument ? null : selectedTaskCurrentJsonCacheKey &&
                             previewJsonByFile[selectedTaskCurrentJsonCacheKey]?.segments?.length > 0 ? (
-                            <div className="max-h-80 space-y-3 overflow-auto">
+                            <div
+                              className="max-h-80 space-y-3 overflow-auto"
+                              ref={transcriptScrollRef}
+                              onScroll={() => {
+                                userScrollingRef.current = true
+                                if (userScrollTimeoutRef.current) clearTimeout(userScrollTimeoutRef.current)
+                                userScrollTimeoutRef.current = setTimeout(() => {
+                                  userScrollingRef.current = false
+                                }, 3000)
+                              }}
+                            >
                               {previewJsonByFile[selectedTaskCurrentJsonCacheKey].segments.map(
                                 (segment) => {
                                   const isActive =

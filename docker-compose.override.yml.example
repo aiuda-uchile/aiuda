@@ -11,18 +11,36 @@
 
 services:
   backend:
+    build:
+      args:
+        # Proxy corporativo o institucional (dejá vacío si no tenés)
+        - HTTP_PROXY=
+        - HTTPS_PROXY=
+        - NO_PROXY=localhost,127.0.0.1
     environment:
       # Proxy corporativo o institucional (dejá vacío si no tenés)
-      - HTTP_PROXY=http://tu-proxy:8080
-      - HTTPS_PROXY=http://tu-proxy:8080
-      - NO_PROXY=localhost,127.0.0.1,backend,aluda-backend,aluda-frontend,172.0.0.0/8
-
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - NO_PROXY=localhost,127.0.0.1,backend,aiuda-backend,aiuda-frontend,172.0.0.0/8
+      # Zona horaria (ver lista en https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+      - TZ=America/Argentina/Buenos_Aires
+      # SMTP para notificaciones por mail (opcional)
+      - AIUDA_SMTP_HOST=
+      - AIUDA_SMTP_PORT=587
+      - AIUDA_SMTP_FROM=
+      - AIUDA_SMTP_USER=
+      - AIUDA_SMTP_PASSWORD=
+      - AIUDA_SMTP_SECURITY=tls
+    volumes:
+      # Heredar zona horaria del sistema operativo host
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
   frontend:
     environment:
       # Proxy corporativo o institucional (dejá vacío si no tenés)
-      - HTTP_PROXY=http://tu-proxy:8080
-      - HTTPS_PROXY=http://tu-proxy:8080
-      - NO_PROXY=localhost,127.0.0.1,backend,aluda-backend,172.0.0.0/8
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - NO_PROXY=localhost,127.0.0.1,backend,aiuda-backend,172.0.0.0/8
       # Host(s) permitidos para el servidor de desarrollo de Vite
       # Ejemplo: VITE_ALLOWED_HOSTS=mi-servidor.ejemplo.com
       - VITE_ALLOWED_HOSTS=
