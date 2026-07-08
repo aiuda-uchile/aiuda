@@ -487,7 +487,7 @@ def format_finished_at(value: str) -> str:
         return "-"
     try:
         dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
-        return dt.strftime("%d/%m/%Y %H:%M")
+        return dt.astimezone().strftime("%d/%m/%Y %H:%M")
     except Exception:
         return value
 
