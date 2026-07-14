@@ -17,7 +17,7 @@ const allowedHosts = [
 
 
 export default defineConfig({
-  base: 'aiuda/',
+  base: '/app/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -28,10 +28,10 @@ export default defineConfig({
     allowedHosts,
     proxy: {
       "/api": apiProxyTarget,
-      "/aiuda/api": {
+      "/app/api": {
         target: apiProxyTarget,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/aiuda\/api/, "/api"),
+        rewrite: (path) => path.replace(/^\/app\/api/, "/api"),
       },
     },
   },
