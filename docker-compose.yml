@@ -39,6 +39,14 @@ services:
     depends_on:
       - backend
 
+  public-site:
+    image: nginx:alpine
+    container_name: aiuda-public-site
+    restart: unless-stopped
+    volumes:
+      - ./docker/public-site/aiuda.uchile.cl.html:/usr/share/nginx/html/index.html:ro
+      - ./docker/public-site/assets:/usr/share/nginx/html/assets:ro
+
   proxy:
     image: jc21/nginx-proxy-manager:latest
     container_name: aiuda-proxy
