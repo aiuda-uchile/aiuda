@@ -64,6 +64,11 @@ function getPublicAssetUrl(path) {
   return `${BASE_URL}${String(path).replace(/^\/+/, "")}`
 }
 
+function getApiUrl(path) {
+  const cleanBase = BASE_URL.endsWith("/") ? BASE_URL : `${BASE_URL}/`
+  return `${cleanBase}api/${String(path).replace(/^\/+/, "")}`
+}
+
 
 const TARGET_LANGS = [
   { code: "es", labelKey: "lang-es", icon: "🇪🇸" },
@@ -816,7 +821,7 @@ export default function App() {
   async function fetchTasks(silent = false) {
     if (!silent) setLoadingTasks(true)
     try {
-      const response = await fetch("/api/tasks")
+      const response = await fetch(getApiUrl("tasks"))
       if (!response.ok) {
         throw new Error(`No se pudieron cargar las tareas (${response.status})`)
       }
@@ -885,7 +890,7 @@ export default function App() {
     const id = searchId.trim().toLowerCase()
     if (id.length < 6) return
     if (sessionTaskIds.has(id)) return
-    fetch(`/api/tasks/${id}`)
+    fetch(getApiUrl(`tasks/${id}`))
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data?.id) {
@@ -1011,7 +1016,7 @@ export default function App() {
       formData.append("target_langs", payload.target_langs)
       formData.append("ui_lang", lang)
 
-      const response = await fetch("/api/tasks", {
+      const response = await fetch(getApiUrl("tasks"), {
         method: "POST",
         body: formData,
       })
@@ -1096,9 +1101,7 @@ export default function App() {
     files.forEach((filename, index) => {
       window.setTimeout(() => {
         const link = document.createElement("a")
-        link.href = `/api/tasks/${taskId}/download/${encodeURIComponent(
-          filename,
-        )}`
+        link.href = getApiUrl(`tasks/${taskId}/download/${encodeURIComponent(filename)}`)
         link.download = filename
         document.body.appendChild(link)
         link.click()
@@ -1108,7 +1111,7 @@ export default function App() {
   }
 
   async function fetchLogText(taskId) {
-    const response = await fetch(`/api/tasks/${taskId}/log`)
+    const response = await fetch(getApiUrl(`tasks/${taskId}/log`))
 
     if (!response.ok) {
       throw new Error(`No se pudo cargar la información del procesamiento (${response.status})`)
@@ -1210,7 +1213,7 @@ export default function App() {
       setLoadingJsonPreviewKey(cacheKey)
 
       const response = await fetch(
-        `/api/tasks/${taskId}/download/${encodeURIComponent(filename)}`,
+        getApiUrl(`tasks/${taskId}/download/${encodeURIComponent(filename)}`),
       )
 
       if (!response.ok) {
@@ -2391,9 +2394,9 @@ export default function App() {
                         <video
                           controls
                           className="w-full rounded-xl bg-black video-container"
-                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          src={getApiUrl(`tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskCurrentVideoFile,
-                          )}`}
+                          )}`)}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
                           {t("error-6")}
@@ -2431,9 +2434,9 @@ export default function App() {
                           ref={audioPlayerRef}
                           controls
                           className="w-full"
-                          src={`/api/tasks/${selectedTask.id}/download/${encodeURIComponent(
+                          src={getApiUrl(`tasks/${selectedTask.id}/download/${encodeURIComponent(
                             selectedTaskAudioFile,
-                          )}`}
+                          )}`)}
                           onTimeUpdate={(e) => setCurrentAudioTime(e.currentTarget.currentTime)}
                         >
                           {t("error-7")}
