@@ -465,7 +465,7 @@ def process_audio(
         input_file=input_file,
         model_name=whisper_model,
         beam_size=beam_size,
-        compute_type=_effective_compute,
+        compute_type=compute_type,
         source_lang=manual_source_lang,
         logger=logger,
     )
