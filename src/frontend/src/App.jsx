@@ -172,7 +172,7 @@ function buildPayload(form) {
       form.options.source_lang_mode === "manual"
         ? form.options.source_lang.trim() || "auto"
         : "auto",
-    target_langs: (task_type === "documents" ? form.options.file_langs : form.options.target_langs).join(","),
+    target_langs: (form.options.file_langs || []).join(","),
   }
 }
 
@@ -978,7 +978,10 @@ export default function App() {
       newErrors.file = t("file-error-3")
     }
 
-    if (form.options.translation && form.options.target_langs.length === 0) {
+    if (
+      form.options.translation &&
+      (!form.options.file_langs || form.options.file_langs.length === 0)
+    ) {
       setUiError("Selecciona al menos un idioma destino.")
       return
     }
