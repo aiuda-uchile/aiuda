@@ -46,6 +46,8 @@ services:
     volumes:
       - ./docker/public-site/aiuda.uchile.cl.html:/usr/share/nginx/html/index.html:ro
       - ./docker/public-site/assets:/usr/share/nginx/html/assets:ro
+      - ./docker/public-site/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docs:/usr/share/nginx/html/docs:ro
 
   proxy:
     image: jc21/nginx-proxy-manager:latest
