@@ -44,7 +44,10 @@ services:
     container_name: aiuda-public-site
     restart: unless-stopped
     volumes:
-      - ./docker/public-site/aiuda.uchile.cl.html:/usr/share/nginx/html/index.html:ro
+      - ./docker/public-site/index-es.html:/usr/share/nginx/html/index-es.html:ro
+      - ./docker/public-site/index-en.html:/usr/share/nginx/html/index-en.html:ro
+      - ./docker/public-site/index-gl.html:/usr/share/nginx/html/index-gl.html:ro
+      - ./docker/public-site/index-pt.html:/usr/share/nginx/html/index-pt.html:ro
       - ./docker/public-site/assets:/usr/share/nginx/html/assets:ro
       - ./docker/public-site/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./docs:/usr/share/nginx/html/docs:ro
